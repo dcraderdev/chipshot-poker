@@ -108,14 +108,18 @@
 
     function shiftHostNavs(){
       var els = document.body.querySelectorAll('*');
+      var vw = window.innerWidth;
       for (var i = 0; i < els.length; i++) {
         var el = els[i];
         if (el === bar || bar.contains(el)) continue;
         if (el.hasAttribute('data-dt-shifted')) continue;
         var cs = getComputedStyle(el);
-        if ((cs.position === 'fixed' || cs.position === 'sticky') && parseFloat(cs.top) < 2) {
-          el.setAttribute('data-dt-shifted','');
-        }
+        if ((cs.position !== 'fixed' && cs.position !== 'sticky') || parseFloat(cs.top) > 2) continue;
+        var r = el.getBoundingClientRect();
+        // Only target wide elements: top navs, full-screen drawers/overlays.
+        // Skips small floating UI like custom cursors, back-to-top pills, chat widgets.
+        if (r.width < vw * 0.5) continue;
+        el.setAttribute('data-dt-shifted','');
       }
     }
     shiftHostNavs();
