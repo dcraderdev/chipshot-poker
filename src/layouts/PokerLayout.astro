@@ -45,6 +45,10 @@ const nav = [
 
     <slot name="head" />
     <script src="/template-topheader.js" defer></script>
+    <style>
+      /* Offset page below dcrader portfolio bar (34px fixed-position) so the header isn't clipped */
+      html.dt-th-spaced body { padding-top: 34px; }
+    </style>
   </head>
   <body class="min-h-screen flex flex-col">
     <a
@@ -116,7 +120,10 @@ const nav = [
               </a>
             </li>
             <li class="text-parchment-dim text-xs pt-2">
-              &copy; {new Date().getFullYear()} ChipShot Poker. Concept site by dcrader.dev.
+              &copy; {new Date().getFullYear()} ChipShot Poker. Built by{' '}
+              <a class="text-parchment-soft hover:text-gold-bright" href="https://dcrader.dev" rel="noopener">
+                Donovan Crader &middot; dcrader.dev
+              </a>
             </li>
           </ul>
         </div>
