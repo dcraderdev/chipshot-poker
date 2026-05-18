@@ -64,8 +64,11 @@
       + '#dcrader-th .dt-menu a{display:block;padding:7px 14px;font-size:12.5px;color:#e8e8ea;opacity:.85;}'
       + '#dcrader-th .dt-menu a:hover{background:rgba(255,255,255,0.06);opacity:1;}'
       + '#dcrader-th .dt-menu .dt-back{border-top:1px solid rgba(255,255,255,0.08);margin-top:6px;padding-top:6px;}'
-      + 'html.dt-th-spaced{scroll-padding-top:34px;}'
-      + '@media (max-width:520px){#dcrader-th .dt-inner{height:32px;padding:0 10px;gap:8px;}#dcrader-th nav{gap:10px;}#dcrader-th nav a:not(.dt-pri){display:none;}#dcrader-th .dt-menu{max-height:70vh;}}'
+      + 'html{--dt-th-h:34px;}'
+      + 'html.dt-th-hidden{--dt-th-h:0px;}'
+      + 'html.dt-th-mounted{scroll-padding-top:var(--dt-th-h);}'
+      + 'html.dt-th-mounted [data-dt-shifted]{top:var(--dt-th-h)!important;transition:top .18s ease-out;}'
+      + '@media (max-width:520px){html{--dt-th-h:32px;}#dcrader-th .dt-inner{height:32px;padding:0 10px;gap:8px;}#dcrader-th nav{gap:10px;}#dcrader-th nav a:not(.dt-pri){display:none;}#dcrader-th .dt-menu{max-height:70vh;}}'
       ;
     var style = document.createElement('style');
     style.id = 'dcrader-th-style';
@@ -101,7 +104,22 @@
       + '  </nav>'
       + '</div>';
     document.body.insertBefore(bar, document.body.firstChild);
-    document.documentElement.classList.add('dt-th-spaced');
+    document.documentElement.classList.add('dt-th-mounted');
+
+    function shiftHostNavs(){
+      var els = document.body.querySelectorAll('*');
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        if (el === bar || bar.contains(el)) continue;
+        if (el.hasAttribute('data-dt-shifted')) continue;
+        var cs = getComputedStyle(el);
+        if ((cs.position === 'fixed' || cs.position === 'sticky') && parseFloat(cs.top) < 2) {
+          el.setAttribute('data-dt-shifted','');
+        }
+      }
+    }
+    shiftHostNavs();
+    window.addEventListener('resize', shiftHostNavs);
 
     var btn = bar.querySelector('.dt-dd button');
     var menu = bar.querySelector('.dt-menu');
@@ -126,9 +144,11 @@
       if (y > lastY && y > 60) {
         bar.classList.add('dt-shown');
         bar.classList.add('dt-hidden');
+        document.documentElement.classList.add('dt-th-hidden');
       } else {
         bar.classList.add('dt-shown');
         bar.classList.remove('dt-hidden');
+        document.documentElement.classList.remove('dt-th-hidden');
       }
       lastY = y;
       ticking = false;
