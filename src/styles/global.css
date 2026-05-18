@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+@theme {
+  --color-felt-deep: #082619;
+  --color-felt: #0d3b2e;
+  --color-felt-mid: #145a3f;
+  --color-felt-rail: #1f7a55;
+  --color-felt-edge: #062018;
+
+  --color-gold: #d4af37;
+  --color-gold-bright: #f0c855;
+  --color-gold-deep: #a3851f;
+
+  --color-parchment: #f3e8c8;
+  --color-parchment-soft: #d9cda6;
+  --color-parchment-dim: #a89e7a;
+
+  --color-chip-red: #c9302c;
+  --color-chip-blue: #2f6b9a;
+  --color-chip-black: #111111;
+
+  --color-card-red: #d9404a;
+  --color-card-ink: #0c0c0c;
+
+  --color-win: #4ade80;
+  --color-loss: #f87171;
+
+  --font-display: "Playfair Display", "Times New Roman", Georgia, serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--color-felt-deep);
+  color: var(--color-parchment);
+}
+
+body {
+  font-family: var(--font-body);
+  background:
+    radial-gradient(ellipse at top, var(--color-felt-mid) 0%, var(--color-felt) 45%, var(--color-felt-deep) 100%);
+  background-attachment: fixed;
+  color: var(--color-parchment);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-felt-deep);
+}
+
+*:focus-visible {
+  outline: 3px solid var(--color-gold-bright);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Display headline type */
+.display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.02;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.numeral {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.eyebrow {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-gold-bright);
+  border: 1px solid var(--color-gold-deep);
+  background: rgba(13, 59, 46, 0.55);
+}
+
+/* Gold rule */
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--color-gold-deep) 20%,
+    var(--color-gold) 50%,
+    var(--color-gold-deep) 80%,
+    transparent 100%);
+}
+
+/* Card chip styling — small inline rendered playing cards */
+.card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.9rem;
+  height: 2.4rem;
+  padding: 0 0.35rem;
+  border-radius: 4px;
+  background: #f7f1de;
+  color: var(--color-card-ink);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  box-shadow:
+    0 1px 0 rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(0,0,0,0.18);
+}
+.card.red { color: var(--color-card-red); }
+.card.black { color: var(--color-card-ink); }
+.card.lg {
+  min-width: 2.6rem;
+  height: 3.4rem;
+  font-size: 1.35rem;
+}
+.card.xl {
+  min-width: 3.2rem;
+  height: 4.4rem;
+  font-size: 1.75rem;
+}
+.card.back {
+  background:
+    repeating-linear-gradient(45deg,
+      var(--color-felt-mid) 0 6px,
+      var(--color-felt-deep) 6px 12px);
+  color: var(--color-gold);
+  border: 1px solid var(--color-gold-deep);
+}
+
+/* Chip icon */
+.chip {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 3px dashed var(--color-gold);
+  background: var(--color-chip-red);
+}
+
+/* Panel: dark card on felt with gold trim */
+.panel {
+  background: rgba(8, 38, 25, 0.78);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 8px;
+  box-shadow:
+    0 1px 0 rgba(212, 175, 55, 0.08) inset,
+    0 10px 30px -12px rgba(0, 0, 0, 0.55);
+}
+
+.panel-gold {
+  background: rgba(8, 38, 25, 0.78);
+  border: 1px solid var(--color-gold-deep);
+  border-radius: 8px;
+}
+
+/* Primary CTA */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-felt-deep);
+  background: linear-gradient(180deg, var(--color-gold-bright) 0%, var(--color-gold) 60%, var(--color-gold-deep) 100%);
+  border: 1px solid var(--color-gold-deep);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.25) inset,
+    0 0 0 1px rgba(0,0,0,0.25);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.btn-gold:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-parchment);
+  background: transparent;
+  border: 1px solid var(--color-parchment-dim);
+  border-radius: 3px;
+}
+.btn-ghost:hover { border-color: var(--color-gold); color: var(--color-gold-bright); }
+
+/* Stat panel */
+.stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-parchment-dim);
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-gold-bright);
+}
+
+/* Result colors */
+.win { color: var(--color-win); }
+.loss { color: var(--color-loss); }
+
+/* Help axe-core sample text contrast: anchor descendants of dark sections
+   with their own opaque bg so the checker doesn't pixel-sample offscreen */
+body :where(p, span, a, li, dt, dd, time, em, strong, code, h1, h2, h3, h4, h5, h6, button, th, td, label, dt):not([class*="bg-"]):not(.card):not(.eyebrow):not(.btn-gold):not(.btn-ghost) {
+  background-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

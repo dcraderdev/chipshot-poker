@@ -1,0 +1,152 @@
+---
+import '../styles/global.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  active?: 'home' | 'hands' | 'stats' | 'play';
+}
+
+const { title, description, active } = Astro.props;
+
+const nav = [
+  { href: '/', label: 'Home', key: 'home' },
+  { href: '/hands', label: 'Hands', key: 'hands' },
+  { href: '/stats', label: 'Stats', key: 'stats' },
+  { href: '/play', label: 'Play', key: 'play' },
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0d3b2e" />
+    <title>{title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap"
+    />
+
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen flex flex-col">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:bg-gold focus:text-felt-deep focus:px-4 focus:py-2 focus:font-bold"
+    >
+      Skip to main content
+    </a>
+
+    <header class="border-b border-gold-deep/40" style="background: rgba(6, 32, 24, 0.85); backdrop-filter: blur(6px);">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+        <a href="/" class="flex items-center gap-3 group" aria-label="ChipShot Poker home">
+          <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+            <circle cx="14" cy="14" r="12" fill="#0d3b2e" stroke="#d4af37" stroke-width="1.5"/>
+            <circle cx="14" cy="14" r="7" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="2 2"/>
+            <text x="14" y="18" text-anchor="middle" font-family="Playfair Display, serif" font-weight="700" font-size="11" fill="#f0c855">A</text>
+          </svg>
+          <span class="display text-xl sm:text-2xl tracking-tight text-parchment">
+            ChipShot<span class="text-gold-bright"> Poker</span>
+          </span>
+        </a>
+        <nav aria-label="Primary">
+          <ul class="flex items-center gap-0 sm:gap-1">
+            {nav.map((n) => (
+              <li>
+                <a
+                  href={n.href}
+                  class={`mono text-xs sm:text-sm px-2.5 sm:px-3.5 py-2 rounded-sm transition-colors ${active === n.key ? 'text-gold-bright bg-felt-deep/80 border border-gold-deep/60' : 'text-parchment-soft hover:text-gold-bright'}`}
+                  aria-current={active === n.key ? 'page' : undefined}
+                >
+                  {n.label.toUpperCase()}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="mt-16 border-t border-gold-deep/40" style="background: rgba(6, 24, 18, 0.92);">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 sm:grid-cols-3">
+        <div>
+          <p class="display text-2xl text-parchment">
+            ChipShot<span class="text-gold-bright"> Poker</span>
+          </p>
+          <p class="mt-2 text-sm text-parchment-soft max-w-xs">
+            Track every chip, every hand, every read. A concept site for a Texas Hold&apos;em journal and stat tracker.
+          </p>
+        </div>
+        <div>
+          <p class="stat-label">Sections</p>
+          <ul class="mt-3 space-y-1.5 text-sm">
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/">Home</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/hands">Hand history</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/stats">Stats dashboard</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/play">Review walkthrough</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="stat-label">Site</p>
+          <ul class="mt-3 space-y-1.5 text-sm">
+            <li>
+              <a class="text-parchment-soft hover:text-gold-bright" href="/accessibility">
+                Accessibility
+              </a>
+            </li>
+            <li class="text-parchment-dim text-xs pt-2">
+              &copy; {new Date().getFullYear()} ChipShot Poker. Concept site by dcrader.dev.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      if (import.meta.env.DEV) {
+        const audit = async () => {
+          const { default: axe } = await import('axe-core');
+          const startY = window.scrollY;
+          const docH = document.documentElement.scrollHeight;
+          const step = Math.max(200, window.innerHeight - 100);
+          for (let y = 0; y < docH; y += step) {
+            window.scrollTo(0, y);
+            await new Promise((r) => setTimeout(r, 30));
+          }
+          window.scrollTo(0, startY);
+          await new Promise((r) => setTimeout(r, 100));
+          const results = await axe.run();
+          if (results.violations.length) {
+            console.group('%c axe violations', 'color:red;font-weight:bold');
+            results.violations.forEach((v) => console.error(v.id, v.description, v.nodes));
+            console.groupEnd();
+          } else {
+            console.log('%c axe: 0 violations', 'color:green;font-weight:bold');
+          }
+        };
+        if (document.readyState === 'complete') audit();
+        else window.addEventListener('load', () => setTimeout(audit, 200));
+      }
+    </script>
+  </body>
+</html>

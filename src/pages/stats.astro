@@ -1,0 +1,252 @@
+---
+import PokerLayout from '../layouts/PokerLayout.astro';
+
+// Bankroll over time — 30 points, finishing up
+const bankroll = [
+  0, 80, 60, 140, 110, 220, 320, 280, 410, 360,
+  500, 580, 520, 640, 720, 660, 540, 620, 760, 880,
+  820, 940, 1080, 1020, 1180, 1240, 1180, 1320, 1410, 1560,
+];
+const maxBR = Math.max(...bankroll);
+const minBR = Math.min(...bankroll);
+const chartW = 700;
+const chartH = 220;
+const padL = 44;
+const padR = 12;
+const padT = 16;
+const padB = 28;
+const innerW = chartW - padL - padR;
+const innerH = chartH - padT - padB;
+
+const xAt = (i: number) =>
+  padL + (i / (bankroll.length - 1)) * innerW;
+const yAt = (v: number) =>
+  padT + innerH - ((v - minBR) / (maxBR - minBR || 1)) * innerH;
+
+const linePoints = bankroll.map((v, i) => `${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ');
+const areaPath =
+  `M ${xAt(0).toFixed(1)},${(padT + innerH).toFixed(1)} ` +
+  bankroll.map((v, i) => `L ${xAt(i).toFixed(1)},${yAt(v).toFixed(1)}`).join(' ') +
+  ` L ${xAt(bankroll.length - 1).toFixed(1)},${(padT + innerH).toFixed(1)} Z`;
+
+// y-axis ticks
+const yTicks = [0, 400, 800, 1200, 1600];
+
+// Positional winrate bb/100
+const positions = [
+  { key: 'UTG', value: -2.4 },
+  { key: 'MP', value: 1.1 },
+  { key: 'HJ', value: 3.8 },
+  { key: 'CO', value: 9.2 },
+  { key: 'BTN', value: 18.4 },
+  { key: 'SB', value: -8.7 },
+  { key: 'BB', value: -12.1 },
+];
+const maxAbs = Math.max(...positions.map((p) => Math.abs(p.value)));
+
+// Donut: showdown frequency
+const wentToShowdown = 28; // %
+const wonAtShowdown = 54; // %
+const donutSize = 180;
+const donutR = 70;
+const donutCx = donutSize / 2;
+const donutCy = donutSize / 2;
+const donutCirc = 2 * Math.PI * donutR;
+const wtsdDash = (wentToShowdown / 100) * donutCirc;
+const wsdDash = (wonAtShowdown / 100) * donutCirc;
+
+const kpis = [
+  { label: 'VPIP', value: '22.1%', sub: 'voluntary $ in pot' },
+  { label: 'PFR', value: '17.6%', sub: 'preflop raise' },
+  { label: '3-Bet', value: '7.8%', sub: 'preflop reraise' },
+  { label: 'AFq', value: '38%', sub: 'aggression freq' },
+  { label: 'Hands', value: '14,228', sub: 'lifetime' },
+  { label: 'bb/100', value: '+8.4', sub: 'over 14.2k', good: true },
+  { label: 'Biggest pot', value: '$1,420', sub: 'PFR vs CO, KK' },
+  { label: 'Hours', value: '312.5', sub: 'live + online' },
+];
+---
+<PokerLayout
+  title="Stats dashboard — ChipShot Poker"
+  description="A demo poker stat dashboard: KPIs, bankroll over time, positional winrate, and showdown frequency."
+  active="stats"
+>
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <span class="eyebrow">Dashboard</span>
+        <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Your numbers</h1>
+        <p class="text-parchment-soft text-sm mt-2 max-w-xl">
+          A snapshot of fourteen thousand hands. Sample data &mdash; in production every cell is filtered by stake, position, date, and tag.
+        </p>
+      </div>
+      <div class="mono text-xs text-parchment-dim">
+        Updated <span class="text-parchment">May 14, 9:42 PM</span>
+      </div>
+    </div>
+    <div class="gold-rule mt-6"></div>
+  </section>
+
+  <!-- KPI GRID -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <ul class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      {kpis.map((k) => (
+        <li class="panel p-4">
+          <p class="stat-label">{k.label}</p>
+          <p class={`mono font-semibold text-2xl mt-1 ${k.good ? 'win' : 'text-gold-bright'}`}>{k.value}</p>
+          <p class="text-parchment-dim text-xs mt-1">{k.sub}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- BANKROLL CHART -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+    <div class="panel p-5 sm:p-7">
+      <div class="flex flex-wrap items-end justify-between gap-2 mb-4">
+        <div>
+          <h2 class="display text-2xl text-parchment">Bankroll over time</h2>
+          <p class="text-parchment-soft text-sm">Cumulative bb, last 30 sessions.</p>
+        </div>
+        <div class="flex gap-4 mono text-xs">
+          <div>
+            <span class="stat-label">Peak</span>
+            <span class="stat-value ml-2">+1,560 bb</span>
+          </div>
+          <div>
+            <span class="stat-label">Drawdown</span>
+            <span class="loss ml-2">-180 bb</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-full overflow-x-auto">
+        <svg viewBox={`0 0 ${chartW} ${chartH}`} class="w-full h-auto min-w-[480px]" role="img" aria-label="Bankroll trend line chart, finishing at positive 1560 big blinds">
+          <defs>
+            <linearGradient id="brArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#d4af37" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+
+          <!-- horizontal gridlines -->
+          {yTicks.map((t) => (
+            <g>
+              <line x1={padL} y1={yAt(t)} x2={chartW - padR} y2={yAt(t)} stroke="#a89e7a" stroke-opacity="0.15" stroke-width="1"/>
+              <text x={padL - 8} y={yAt(t) + 4} text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#a89e7a">{t}</text>
+            </g>
+          ))}
+
+          <!-- zero line emphasized -->
+          <line x1={padL} y1={yAt(0)} x2={chartW - padR} y2={yAt(0)} stroke="#a89e7a" stroke-opacity="0.4" stroke-dasharray="2 3"/>
+
+          <!-- area -->
+          <path d={areaPath} fill="url(#brArea)"/>
+          <!-- line -->
+          <polyline
+            points={linePoints}
+            fill="none"
+            stroke="#f0c855"
+            stroke-width="2"
+            stroke-linejoin="round"
+            stroke-linecap="round"
+          />
+          <!-- last point dot -->
+          <circle cx={xAt(bankroll.length - 1)} cy={yAt(bankroll[bankroll.length - 1])} r="4" fill="#f0c855" stroke="#0d3b2e" stroke-width="2"/>
+
+          <!-- x labels -->
+          <text x={padL} y={chartH - 8} font-family="JetBrains Mono, monospace" font-size="10" fill="#a89e7a">S 1</text>
+          <text x={xAt(Math.floor(bankroll.length / 2))} y={chartH - 8} text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#a89e7a">S 15</text>
+          <text x={chartW - padR} y={chartH - 8} text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" fill="#a89e7a">S 30</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- POSITIONAL + DONUT -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid lg:grid-cols-3 gap-5">
+    <div class="panel p-5 sm:p-7 lg:col-span-2">
+      <h2 class="display text-2xl text-parchment">Positional winrate</h2>
+      <p class="text-parchment-soft text-sm">bb / 100 by seat. Late position carries you, as it should.</p>
+
+      <ul class="mt-5 space-y-3">
+        {positions.map((p) => {
+          const pct = (Math.abs(p.value) / maxAbs) * 100;
+          const isPos = p.value >= 0;
+          return (
+            <li class="grid grid-cols-[42px_1fr_64px] items-center gap-3">
+              <span class="mono text-xs text-parchment-soft">{p.key}</span>
+              <div class="relative h-5 bg-felt-deep/70 border border-gold-deep/20 rounded-sm overflow-hidden">
+                <div
+                  class={isPos ? 'absolute left-1/2 top-0 bottom-0' : 'absolute right-1/2 top-0 bottom-0'}
+                  style={`width: ${pct / 2}%; background: ${isPos ? '#4ade80' : '#f87171'}; opacity: 0.85;`}
+                ></div>
+                <div class="absolute left-1/2 top-0 bottom-0 w-px bg-gold-deep/60"></div>
+              </div>
+              <span class={`mono text-sm font-semibold text-right ${isPos ? 'win' : 'loss'}`}>
+                {isPos ? '+' : ''}{p.value.toFixed(1)}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+
+    <div class="panel p-5 sm:p-7">
+      <h2 class="display text-2xl text-parchment">Showdown</h2>
+      <p class="text-parchment-soft text-sm">Frequency and win rate at showdown.</p>
+
+      <div class="mt-5 flex flex-col items-center">
+        <svg width={donutSize} height={donutSize} viewBox={`0 0 ${donutSize} ${donutSize}`} role="img" aria-label={`Went to showdown ${wentToShowdown} percent, won at showdown ${wonAtShowdown} percent.`}>
+          <!-- track -->
+          <circle cx={donutCx} cy={donutCy} r={donutR} fill="none" stroke="#082619" stroke-width="14"/>
+          <!-- WTSD arc -->
+          <circle
+            cx={donutCx}
+            cy={donutCy}
+            r={donutR}
+            fill="none"
+            stroke="#d4af37"
+            stroke-width="14"
+            stroke-dasharray={`${wtsdDash} ${donutCirc - wtsdDash}`}
+            transform={`rotate(-90 ${donutCx} ${donutCy})`}
+            stroke-linecap="butt"
+          />
+          <!-- inner ring: W$SD -->
+          <circle cx={donutCx} cy={donutCy} r={donutR - 18} fill="none" stroke="#082619" stroke-width="8"/>
+          <circle
+            cx={donutCx}
+            cy={donutCy}
+            r={donutR - 18}
+            fill="none"
+            stroke="#4ade80"
+            stroke-width="8"
+            stroke-dasharray={`${(wonAtShowdown / 100) * (2 * Math.PI * (donutR - 18))} ${(2 * Math.PI * (donutR - 18)) - (wonAtShowdown / 100) * (2 * Math.PI * (donutR - 18))}`}
+            transform={`rotate(-90 ${donutCx} ${donutCy})`}
+          />
+          <text x={donutCx} y={donutCy - 4} text-anchor="middle" font-family="JetBrains Mono, monospace" font-weight="600" font-size="22" fill="#f0c855">{wentToShowdown}%</text>
+          <text x={donutCx} y={donutCy + 14} text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#a89e7a">WTSD</text>
+        </svg>
+        <ul class="mt-4 grid grid-cols-2 gap-3 w-full">
+          <li>
+            <p class="stat-label">WTSD</p>
+            <p class="mono text-lg text-gold-bright">{wentToShowdown}%</p>
+          </li>
+          <li>
+            <p class="stat-label">W$SD</p>
+            <p class="mono text-lg win">{wonAtShowdown}%</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer CTA -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pb-20 text-center">
+    <p class="text-parchment-soft text-sm">Every chart filterable by stake, position, hand range, tag, and date in production.</p>
+    <div class="mt-4 flex justify-center gap-3 flex-wrap">
+      <a href="/hands" class="btn-ghost">Back to hands</a>
+      <a href="/play" class="btn-gold">See the workflow</a>
+    </div>
+  </section>
+</PokerLayout>

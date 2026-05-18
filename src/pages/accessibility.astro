@@ -1,0 +1,31 @@
+---
+import PokerLayout from '../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="Accessibility — ChipShot Poker"
+  description="Accessibility notes for the ChipShot Poker concept site."
+>
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
+    <span class="eyebrow">A11y</span>
+    <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Accessibility</h1>
+    <div class="gold-rule mt-5 mb-6"></div>
+
+    <p class="text-parchment-soft leading-relaxed">
+      ChipShot Poker is a concept demo site. There is no real product behind the pages &mdash; the
+      stats, hands, and dashboards are mock data presented as a portfolio piece.
+    </p>
+
+    <p class="text-parchment-soft leading-relaxed mt-4">
+      That said, accessibility still counts. The site uses semantic HTML landmarks
+      (header, nav, main, footer), a visible skip link, accessible focus rings in
+      gold, color contrast above 4.5:1 on body text, descriptive labels on all
+      links and navigation, and keyboard navigability throughout. An axe-core
+      audit runs in development on every page load.
+    </p>
+
+    <p class="text-parchment-soft leading-relaxed mt-4">
+      Spot a real-world issue? &mdash;
+      <a class="text-gold-bright underline" href="mailto:hello@dcrader.dev">hello@dcrader.dev</a>.
+    </p>
+  </section>
+</PokerLayout>

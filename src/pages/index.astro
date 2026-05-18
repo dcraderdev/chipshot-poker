@@ -1,0 +1,178 @@
+---
+import PokerLayout from '../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="ChipShot Poker — Track every chip, every hand, every read"
+  description="A Texas Hold'em hand history journal and live stat tracker. Concept site by dcrader.dev."
+  active="home"
+>
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 lg:pt-20 pb-16 grid lg:grid-cols-12 gap-10 items-center">
+      <div class="lg:col-span-7">
+        <span class="eyebrow">No-Limit Hold&apos;em &middot; Live tracker</span>
+        <h1 class="display mt-5 text-4xl sm:text-5xl lg:text-6xl text-parchment leading-tight">
+          Track every <span class="text-gold-bright italic">chip</span>,<br />
+          every hand,<br />
+          every <span class="text-gold-bright italic">read</span>.
+        </h1>
+        <div class="gold-rule my-6 max-w-md"></div>
+        <p class="text-parchment-soft text-base sm:text-lg max-w-xl leading-relaxed">
+          A hand history journal and live stat dashboard for the serious recreational player.
+          Capture the cards, the action, and the read — then watch the math tell you who you really are at the table.
+        </p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="/hands" class="btn-gold">See a sample hand</a>
+          <a href="/stats" class="btn-ghost">View stats demo</a>
+        </div>
+
+        <!-- Inline stat strip -->
+        <dl class="mt-10 grid grid-cols-3 gap-px panel overflow-hidden max-w-xl">
+          <div class="p-4">
+            <dt class="stat-label">Hands logged</dt>
+            <dd class="stat-value text-2xl mt-1">14,228</dd>
+          </div>
+          <div class="p-4 border-l border-gold-deep/30">
+            <dt class="stat-label">bb / 100</dt>
+            <dd class="stat-value text-2xl mt-1 win">+8.4</dd>
+          </div>
+          <div class="p-4 border-l border-gold-deep/30">
+            <dt class="stat-label">VPIP</dt>
+            <dd class="stat-value text-2xl mt-1">22.1%</dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Hero visual: card fan over a table edge -->
+      <div class="lg:col-span-5 relative">
+        <div class="relative aspect-square max-w-md mx-auto">
+          <!-- Table arc behind -->
+          <svg viewBox="0 0 400 400" class="absolute inset-0 w-full h-full" aria-hidden="true">
+            <defs>
+              <radialGradient id="feltGrad" cx="50%" cy="45%" r="60%">
+                <stop offset="0%" stop-color="#1f7a55"/>
+                <stop offset="60%" stop-color="#145a3f"/>
+                <stop offset="100%" stop-color="#082619"/>
+              </radialGradient>
+              <linearGradient id="goldRail" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#f0c855"/>
+                <stop offset="50%" stop-color="#d4af37"/>
+                <stop offset="100%" stop-color="#a3851f"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="200" cy="210" rx="180" ry="160" fill="url(#feltGrad)" stroke="url(#goldRail)" stroke-width="6"/>
+            <ellipse cx="200" cy="210" rx="150" ry="130" fill="none" stroke="#d4af37" stroke-width="0.8" stroke-dasharray="2 4" opacity="0.5"/>
+            <text x="200" y="120" text-anchor="middle" font-family="Playfair Display, serif" font-style="italic" font-size="14" fill="#d4af37" opacity="0.8">ChipShot</text>
+            <!-- chip stacks -->
+            <g transform="translate(80,260)">
+              <ellipse cx="0" cy="14" rx="22" ry="6" fill="#0a0a0a"/>
+              <ellipse cx="0" cy="10" rx="22" ry="6" fill="#c9302c" stroke="#f0c855" stroke-width="1"/>
+              <ellipse cx="0" cy="4" rx="22" ry="6" fill="#2f6b9a" stroke="#f0c855" stroke-width="1"/>
+              <ellipse cx="0" cy="-2" rx="22" ry="6" fill="#111" stroke="#f0c855" stroke-width="1"/>
+              <ellipse cx="0" cy="-8" rx="22" ry="6" fill="#c9302c" stroke="#f0c855" stroke-width="1"/>
+            </g>
+            <g transform="translate(320,270)">
+              <ellipse cx="0" cy="10" rx="22" ry="6" fill="#0a0a0a"/>
+              <ellipse cx="0" cy="6" rx="22" ry="6" fill="#2f6b9a" stroke="#f0c855" stroke-width="1"/>
+              <ellipse cx="0" cy="0" rx="22" ry="6" fill="#c9302c" stroke="#f0c855" stroke-width="1"/>
+              <ellipse cx="0" cy="-6" rx="22" ry="6" fill="#2f6b9a" stroke="#f0c855" stroke-width="1"/>
+            </g>
+          </svg>
+
+          <!-- Hole cards fanned -->
+          <div class="absolute inset-0 flex items-end justify-center pb-10">
+            <div class="relative">
+              <div class="card xl black absolute" style="transform: translate(-46px, 4px) rotate(-12deg);">A&#9824;</div>
+              <div class="card xl red relative" style="transform: rotate(6deg);">K&#9829;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gold-rule"></div>
+  </section>
+
+  <!-- FEATURE TRIPLET -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <div class="grid sm:grid-cols-3 gap-5">
+      <article class="panel p-6">
+        <div class="flex items-center justify-between">
+          <span class="eyebrow">01</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h10"/>
+          </svg>
+        </div>
+        <h3 class="display text-xl text-parchment mt-3">Hand history journal</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          Log hands as you play. Stakes, position, hole cards, board, action by street, your read, your result. Searchable and tagged.
+        </p>
+      </article>
+      <article class="panel p-6">
+        <div class="flex items-center justify-between">
+          <span class="eyebrow">02</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" aria-hidden="true">
+            <path d="M4 20V8M10 20V4M16 20v-9M22 20H2"/>
+          </svg>
+        </div>
+        <h3 class="display text-xl text-parchment mt-3">Live stat dashboard</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          VPIP, PFR, 3-bet, AFq, bb/100, positional winrate. The whole Bloomberg-terminal panel for your poker session.
+        </p>
+      </article>
+      <article class="panel p-6">
+        <div class="flex items-center justify-between">
+          <span class="eyebrow">03</span>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7v5l3 2"/>
+          </svg>
+        </div>
+        <h3 class="display text-xl text-parchment mt-3">Bankroll math</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          Track buy-ins, cashouts, hours played, hourly rate. Variance-aware: see your true expected value, not just last night&apos;s.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <!-- PREVIEW CARDS -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+    <div class="flex items-end justify-between mb-6">
+      <h2 class="display text-2xl sm:text-3xl text-parchment">Walk the table</h2>
+      <span class="stat-label hidden sm:inline">Demo &mdash; three views</span>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <a href="/hands" class="panel p-6 hover:border-gold transition-colors group block">
+        <span class="stat-label">View &rarr;</span>
+        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Hand history</h3>
+        <p class="text-parchment-soft text-sm mt-2">Twelve sample hands. One expanded with full action by street.</p>
+        <div class="mt-4 flex gap-1">
+          <span class="card black">A&#9824;</span>
+          <span class="card red">K&#9829;</span>
+        </div>
+      </a>
+      <a href="/stats" class="panel p-6 hover:border-gold transition-colors group block">
+        <span class="stat-label">View &rarr;</span>
+        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Stats dashboard</h3>
+        <p class="text-parchment-soft text-sm mt-2">KPI grid, bankroll line chart, positional bars, showdown donut.</p>
+        <div class="mt-4 mono text-xs text-parchment-soft flex justify-between max-w-[160px]">
+          <span>VPIP 22.1</span><span>PFR 17.6</span>
+        </div>
+      </a>
+      <a href="/play" class="panel p-6 hover:border-gold transition-colors group block">
+        <span class="stat-label">View &rarr;</span>
+        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Review walkthrough</h3>
+        <p class="text-parchment-soft text-sm mt-2">Five-step flow: capture, tag, read, equity, save.</p>
+        <div class="mt-4 flex gap-2 mono text-xs">
+          <span class="text-gold">1</span><span class="text-parchment-dim">&rsaquo;</span>
+          <span class="text-gold">2</span><span class="text-parchment-dim">&rsaquo;</span>
+          <span class="text-gold">3</span><span class="text-parchment-dim">&rsaquo;</span>
+          <span class="text-gold">4</span><span class="text-parchment-dim">&rsaquo;</span>
+          <span class="text-gold">5</span>
+        </div>
+      </a>
+    </div>
+  </section>
+</PokerLayout>
