@@ -1,0 +1,38 @@
+---
+import PokerLayout from '../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="404 — Page off the felt | ChipShot Poker"
+  description="That page folded. Head back to the table at ChipShot Poker — a Texas Hold'em hand history journal and live stat tracker."
+>
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
+    <span class="eyebrow">Dead hand &middot; Mucked</span>
+
+    <h1
+      class="display mt-6 leading-none tracking-tight text-gold-bright"
+      style="font-size: clamp(6rem, 22vw, 13rem); font-weight: 800;"
+    >
+      404
+    </h1>
+
+    <div class="gold-rule mx-auto my-8 max-w-xs"></div>
+
+    <h2 class="display text-3xl sm:text-4xl text-parchment">
+      Page not found.
+    </h2>
+
+    <p class="mt-5 text-parchment-soft text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
+      Looks like that URL got mucked before the flop. The card you were chasing
+      isn&apos;t in the deck &mdash; but the table is still live.
+    </p>
+
+    <p class="mt-3 mono text-xs sm:text-sm text-parchment-dim">
+      // shuffle up and deal &mdash; let&apos;s find you a better seat.
+    </p>
+
+    <div class="mt-10 flex flex-wrap gap-3 justify-center">
+      <a href="/" class="btn-gold">Back to home</a>
+      <a href="/hands" class="btn-ghost">Browse hand history</a>
+    </div>
+  </section>
+</PokerLayout>
