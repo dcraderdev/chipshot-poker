@@ -18,7 +18,10 @@ import '../../styles/games.css';
       </p>
     </header>
 
-    <div class="felt-table">
+    <div class="felt-table" data-felt>
+      <span class="felt-deck" data-deck aria-hidden="true"></span>
+      <span class="felt-muck" data-muck aria-hidden="true"></span>
+
       <!-- Bot seat -->
       <div class="flex justify-center mb-4">
         <div class="player-seat" data-seat-bot>
@@ -30,7 +33,7 @@ import '../../styles/games.css';
       <div class="flex justify-center gap-2 mb-6" data-bot-cards aria-label="Bot cards"></div>
 
       <div class="flex justify-center mb-6">
-        <span class="felt-pot" aria-label="Pot">
+        <span class="felt-pot" aria-label="Pot" data-pot-chip>
           <span class="chip-dot" aria-hidden="true"></span>
           POT <span data-pot>$0</span>
         </span>
@@ -44,6 +47,8 @@ import '../../styles/games.css';
           <span class="player-stack" data-hero-bank>$1,000</span>
         </div>
       </div>
+
+      <div class="hand-banner" data-hand-banner hidden aria-live="polite"></div>
     </div>
 
     <p

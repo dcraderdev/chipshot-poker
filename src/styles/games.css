@@ -431,3 +431,198 @@
 @media (min-width: 641px) {
   .fixed-bottom-pad { padding-bottom: 0; }
 }
+
+/* ---------- Five-Card Draw visual polish ---------- */
+
+.felt-table { overflow: hidden; }
+
+/* Subtle deck visual on the right side of the felt, used as a visual
+   anchor for deal animations. */
+.felt-deck {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 62px;
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(45deg, #0d3b2e 0 6px, #082619 6px 12px);
+  border: 1px solid rgba(212,175,55,0.55);
+  box-shadow:
+    0 0 0 2px rgba(212,175,55,0.12) inset,
+    2px 0 0 rgba(8,38,25,0.6),
+    4px 1px 0 rgba(8,38,25,0.45),
+    6px 2px 0 rgba(8,38,25,0.3),
+    0 4px 10px rgba(0,0,0,0.5);
+  pointer-events: none;
+  opacity: 0.85;
+}
+.felt-deck::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(212,175,55,0.45);
+  border-radius: 3px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(212,175,55,0.18) 0 30%, transparent 60%);
+}
+.felt-muck {
+  position: absolute;
+  top: 50%;
+  left: 18px;
+  transform: translateY(-50%) rotate(-8deg);
+  width: 44px;
+  height: 62px;
+  border-radius: 5px;
+  background:
+    repeating-linear-gradient(45deg, #1a1a1a 0 6px, #0a0a0a 6px 12px);
+  border: 1px solid rgba(212,175,55,0.25);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,0.5);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.felt-muck::after {
+  content: "MUCK";
+  position: absolute;
+  inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(212,175,55,0.55);
+}
+
+@media (max-width: 640px) {
+  .felt-deck, .felt-muck {
+    width: 34px; height: 48px;
+    right: 10px;
+  }
+  .felt-muck { left: 10px; right: auto; }
+}
+
+/* Chip-fly: animated chip that travels from one element to another.
+   Positioned with position:fixed; the JS sets transform start/end. */
+.chip-fly {
+  position: fixed;
+  z-index: 60;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f0c855, #a3851f 70%, #7a6418);
+  border: 2px dashed rgba(255,255,255,0.6);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.4),
+    0 4px 8px rgba(0,0,0,0.55);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.chip-fly.is-red {
+  background: radial-gradient(circle at 35% 30%, #ef5350, #b71c1c 70%, #7a1212);
+  border-color: rgba(255,255,255,0.55);
+}
+
+/* Pot pulse — a quick "ding" when chips land in the pot */
+.felt-pot.is-pulsing {
+  animation: potPulse 0.45s ease-out;
+}
+@keyframes potPulse {
+  0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(240,200,85,0.55); }
+  40%  { transform: scale(1.08); box-shadow: 0 0 0 8px rgba(240,200,85,0.0); }
+  100% { transform: scale(1); }
+}
+
+/* Hand-rank banner — full-felt overlay that zooms in then fades out */
+.hand-banner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 40;
+}
+.hand-banner[hidden] { display: none; }
+.hand-banner-inner {
+  font-family: var(--font-display, "Playfair Display", serif);
+  font-weight: 700;
+  font-size: clamp(20px, 5vw, 36px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-gold-bright, #f0c855);
+  text-shadow:
+    0 0 14px rgba(240,200,85,0.65),
+    0 2px 6px rgba(0,0,0,0.7);
+  padding: 16px 28px;
+  background: rgba(6, 24, 18, 0.78);
+  border: 1px solid rgba(240,200,85,0.55);
+  border-radius: 8px;
+  backdrop-filter: blur(3px);
+  text-align: center;
+  max-width: 86%;
+  animation: handBanner 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+.hand-banner-inner.is-loss {
+  color: #fca5a5;
+  border-color: rgba(248,113,113,0.55);
+  text-shadow:
+    0 0 12px rgba(248,113,113,0.4),
+    0 2px 6px rgba(0,0,0,0.7);
+}
+@keyframes handBanner {
+  0%   { transform: scale(0.6); opacity: 0; }
+  18%  { transform: scale(1.06); opacity: 1; }
+  30%  { transform: scale(1.0);  opacity: 1; }
+  82%  { transform: scale(1.0);  opacity: 1; }
+  100% { transform: scale(1.04); opacity: 0; }
+}
+
+/* Bot "thinking" dots — used by status text */
+.bot-thinking {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--color-parchment-soft, #d9cda6);
+  letter-spacing: 0.08em;
+}
+.bot-thinking::after {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  text-align: left;
+  animation: thinkDots 1.2s steps(4, end) infinite;
+}
+@keyframes thinkDots {
+  0%   { content: ""; }
+  25%  { content: "."; }
+  50%  { content: ".."; }
+  75%  { content: "..."; }
+  100% { content: ""; }
+}
+
+/* Mobile tuning */
+@media (max-width: 480px) {
+  .felt-table { padding: 18px 8px 24px; }
+  .player-seat { min-width: 110px; padding: 6px 8px; }
+  .player-name { font-size: 11px; }
+  .player-stack { font-size: 12px; }
+  .felt-pot { padding: 5px 12px; font-size: 12px; }
+  .action-btn { min-width: 78px; padding: 9px 12px; font-size: 12px; }
+  [data-bot-cards], [data-hero-cards] { gap: 4px !important; }
+}
+
+/* Reduce-motion: kill chip flight, banner, pot pulse, thinking dots */
+@media (prefers-reduced-motion: reduce) {
+  .chip-fly { display: none !important; }
+  .felt-pot.is-pulsing { animation: none !important; }
+  .hand-banner-inner { animation: handBannerReduced 1.6s linear forwards !important; }
+  .bot-thinking::after { animation: none !important; content: "..." !important; }
+  @keyframes handBannerReduced {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}

@@ -17,6 +17,18 @@ import { Hand } from 'pokersolver';
 const ANTE = 10;
 const BET_SIZES = [20, 50, 100];
 
+const DEAL_STAGGER_MS = 90;
+const DEAL_DUR_MS = 320;
+const TOSS_DUR_MS = 320;
+const FLIP_DUR_MS = 400;
+const CHIP_FLY_MS = 480;
+
+function prefersReducedMotion() {
+  return typeof window !== 'undefined'
+    && window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 // ---------- helpers ----------
 
 const isRedSuit = (s) => s === 'h' || s === 'd';
@@ -121,13 +133,128 @@ export function init() {
   const botCardsEl = document.querySelector('[data-bot-cards]');
   const heroCardsEl = document.querySelector('[data-hero-cards]');
   const potEl = document.querySelector('[data-pot]');
+  const potChipEl = document.querySelector('[data-pot-chip]');
   const heroBankEl = document.querySelector('[data-hero-bank]');
   const botBankEl = document.querySelector('[data-bot-bank]');
   const actionBar = document.querySelector('[data-action-bar]');
   const logEl = document.querySelector('[data-game-log]');
   const lowChipsHint = document.querySelector('[data-low-chips]');
+  const deckEl = document.querySelector('[data-deck]');
+  const muckEl = document.querySelector('[data-muck]');
+  const bannerEl = document.querySelector('[data-hand-banner]');
 
   if (!seatHero || !heroCardsEl || !actionBar) return;
+
+  // ---------- animation helpers ----------
+
+  function rectCenter(el) {
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+  }
+
+  function flyChip(fromEl, toEl, { red = false, delay = 0 } = {}) {
+    if (prefersReducedMotion()) return;
+    const from = rectCenter(fromEl);
+    const to = rectCenter(toEl || potChipEl);
+    if (!from || !to) return;
+    const chip = document.createElement('span');
+    chip.className = `chip-fly${red ? ' is-red' : ''}`;
+    chip.style.left = `${from.x - 11}px`;
+    chip.style.top = `${from.y - 11}px`;
+    document.body.appendChild(chip);
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const peakY = Math.min(dy * 0.4, -40);
+    const anim = chip.animate(
+      [
+        { transform: 'translate(0,0) scale(0.6)', opacity: 0, offset: 0 },
+        { transform: `translate(${dx * 0.45}px, ${peakY}px) scale(1.1)`, opacity: 1, offset: 0.4 },
+        { transform: `translate(${dx}px, ${dy}px) scale(0.85)`, opacity: 0.9, offset: 1 },
+      ],
+      { duration: CHIP_FLY_MS, delay, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'forwards' }
+    );
+    anim.onfinish = () => {
+      chip.remove();
+      pulsePot();
+    };
+  }
+
+  function pulsePot() {
+    if (!potChipEl || prefersReducedMotion()) return;
+    potChipEl.classList.remove('is-pulsing');
+    // force reflow so the animation restarts
+    // eslint-disable-next-line no-unused-expressions
+    void potChipEl.offsetWidth;
+    potChipEl.classList.add('is-pulsing');
+    setTimeout(() => potChipEl.classList.remove('is-pulsing'), 500);
+  }
+
+  function showHandBanner(text, kind = '') {
+    if (!bannerEl) return;
+    bannerEl.innerHTML = '';
+    const inner = document.createElement('div');
+    inner.className = `hand-banner-inner${kind === 'loss' ? ' is-loss' : ''}`;
+    inner.textContent = text;
+    bannerEl.appendChild(inner);
+    bannerEl.hidden = false;
+    const dur = prefersReducedMotion() ? 1600 : 1800;
+    setTimeout(() => {
+      bannerEl.hidden = true;
+      bannerEl.innerHTML = '';
+    }, dur);
+  }
+
+  // Set per-card --deal-dx/--deal-dy CSS vars so they animate from the deck position.
+  function applyDealStagger(rowEl) {
+    if (!rowEl || prefersReducedMotion()) return;
+    const cards = rowEl.querySelectorAll('.playing-card');
+    const deckCenter = rectCenter(deckEl);
+    cards.forEach((c, i) => {
+      let dx = 0, dy = -200;
+      if (deckCenter) {
+        const cr = c.getBoundingClientRect();
+        dx = (deckCenter.x - (cr.left + cr.width / 2));
+        dy = (deckCenter.y - (cr.top + cr.height / 2));
+      }
+      c.style.setProperty('--deal-dx', `${dx}px`);
+      c.style.setProperty('--deal-dy', `${dy}px`);
+      c.style.setProperty('--deal-rot', `${-6 + (i * 2)}deg`);
+      c.style.animationDelay = `${i * DEAL_STAGGER_MS}ms`;
+      c.classList.add('is-dealing-stagger');
+      setTimeout(() => {
+        c.classList.remove('is-dealing-stagger');
+        c.style.animationDelay = '';
+        c.style.removeProperty('--deal-dx');
+        c.style.removeProperty('--deal-dy');
+        c.style.removeProperty('--deal-rot');
+      }, DEAL_DUR_MS + i * DEAL_STAGGER_MS + 50);
+    });
+  }
+
+  function flipCards(rowEl) {
+    if (!rowEl) return;
+    const cards = rowEl.querySelectorAll('.playing-card');
+    cards.forEach((c, i) => {
+      c.style.animationDelay = `${i * 60}ms`;
+      c.classList.add('is-flipping');
+      setTimeout(() => {
+        c.classList.remove('is-flipping');
+        c.style.animationDelay = '';
+      }, FLIP_DUR_MS + i * 60 + 30);
+    });
+  }
+
+  function foldCards(rowEl) {
+    if (!rowEl) return;
+    const cards = rowEl.querySelectorAll('.playing-card');
+    cards.forEach((c, i) => {
+      c.style.setProperty('--fold-dx', `${(i - 2) * 8}px`);
+      c.style.setProperty('--fold-rot', `${(i - 2) * 6 + 4}deg`);
+      c.style.animationDelay = `${i * 40}ms`;
+      c.classList.add('is-folding');
+    });
+  }
 
   // Bot has its own "stack" — not real money, just for show.
   let botStack = 1000;
@@ -168,8 +295,10 @@ export function init() {
       const interactive = state.phase === 'draw';
       const isWin = winIdx.has(i);
       const el = cardEl(c, { interactive, extraClass: isWin ? 'is-win' : '' });
-      if (state.heroDiscards.has(i)) el.classList.add('is-discard');
-      else if (state.phase === 'draw') el.classList.add('is-held');
+      if (state.phase === 'draw') {
+        if (state.heroDiscards.has(i)) el.classList.add('is-toss');
+        else el.classList.add('is-keep');
+      }
       el.addEventListener('click', () => {
         if (state.phase !== 'draw') return;
         if (state.heroDiscards.has(i)) {
@@ -270,6 +399,11 @@ export function init() {
       log('Not enough chips to ante.', 'loss');
       return;
     }
+    // Clear any leftover folded/dealing classes from the previous hand
+    heroCardsEl.innerHTML = '';
+    botCardsEl.innerHTML = '';
+    if (bannerEl) { bannerEl.hidden = true; bannerEl.innerHTML = ''; }
+
     adjustBalance(-ANTE, { game: 'draw', reason: 'ante' });
     botStack -= ANTE;
     state.pot = ANTE * 2;
@@ -282,36 +416,72 @@ export function init() {
     renderPot();
     renderHeroCards();
     renderBotCards({ reveal: false });
+    // Stagger deal animations
+    applyDealStagger(botCardsEl);
+    applyDealStagger(heroCardsEl);
+    // Ante chips fly into the pot
+    flyChip(seatHero, potChipEl, { delay: 0 });
+    flyChip(seatBot, potChipEl, { red: true, delay: 80 });
     renderActions();
     log(`New hand. Antes $${ANTE} each. Pot $${state.pot}.`);
   }
 
   function doDraw() {
-    // Hero discards
     const dropIdx = [...state.heroDiscards].sort((a, b) => a - b);
-    state.heroDiscardsApplied = dropIdx.map((i) => toShort(state.hero[i]));
-    dropIdx.reverse().forEach((i) => {
-      state.hero.splice(i, 1);
-    });
-    while (state.hero.length < 5) state.hero.push(state.deck.shift());
 
-    // Bot discards
-    const keep = botKeepIndices(state.bot);
-    const botDrop = [];
-    for (let i = 0; i < state.bot.length; i++) {
-      if (!keep.has(i)) botDrop.push(i);
+    // Animate hero discards out toward the muck pile.
+    const heroCardEls = [...heroCardsEl.querySelectorAll('.playing-card')];
+    const reduced = prefersReducedMotion();
+    if (!reduced && dropIdx.length > 0) {
+      dropIdx.forEach((i, n) => {
+        const el = heroCardEls[i];
+        if (!el) return;
+        // Toss direction biased toward the muck pile (left side)
+        const muckCenter = rectCenter(muckEl);
+        const cardCenter = rectCenter(el);
+        if (muckCenter && cardCenter) {
+          const dx = muckCenter.x - cardCenter.x;
+          el.style.setProperty('--toss-dx', `${dx}px`);
+        }
+        el.style.animationDelay = `${n * 50}ms`;
+        el.classList.remove('is-toss');
+        el.classList.add('is-tossing');
+      });
     }
-    state.botDiscardsApplied = botDrop.map((i) => toShort(state.bot[i]));
-    botDrop.sort((a, b) => b - a).forEach((i) => state.bot.splice(i, 1));
-    while (state.bot.length < 5) state.bot.push(state.deck.shift());
 
-    log(`You drew ${dropIdx.length}. Bot drew ${botDrop.length}.`);
+    const finalize = () => {
+      // Hero state: actually drop selected indices and refill
+      state.heroDiscardsApplied = dropIdx.map((i) => toShort(state.hero[i]));
+      [...dropIdx].reverse().forEach((i) => { state.hero.splice(i, 1); });
+      while (state.hero.length < 5) state.hero.push(state.deck.shift());
 
-    state.heroDiscards = new Set();
-    state.phase = 'bet';
-    renderHeroCards();
-    renderBotCards({ reveal: false });
-    renderActions();
+      // Bot discards
+      const keep = botKeepIndices(state.bot);
+      const botDrop = [];
+      for (let i = 0; i < state.bot.length; i++) {
+        if (!keep.has(i)) botDrop.push(i);
+      }
+      state.botDiscardsApplied = botDrop.map((i) => toShort(state.bot[i]));
+      botDrop.sort((a, b) => b - a).forEach((i) => state.bot.splice(i, 1));
+      while (state.bot.length < 5) state.bot.push(state.deck.shift());
+
+      log(`You drew ${dropIdx.length}. Bot drew ${botDrop.length}.`);
+
+      state.heroDiscards = new Set();
+      state.phase = 'bet';
+      renderHeroCards();
+      renderBotCards({ reveal: false });
+      // Re-deal the new cards from the deck
+      applyDealStagger(heroCardsEl);
+      applyDealStagger(botCardsEl);
+      renderActions();
+    };
+
+    if (!reduced && dropIdx.length > 0) {
+      setTimeout(finalize, TOSS_DUR_MS + 60);
+    } else {
+      finalize();
+    }
   }
 
   function heroAct({ action, amount = 0 }) {
@@ -335,6 +505,8 @@ export function init() {
       state.heroBet = bet;
       renderBanks();
       renderPot();
+      flyChip(seatHero, potChipEl);
+      if (bet >= 50) flyChip(seatHero, potChipEl, { delay: 80 });
       log(`You bet $${bet}.`);
       botRespond();
     }
@@ -360,6 +532,7 @@ export function init() {
       log(`Bot calls $${call}.`);
       renderBanks();
       renderPot();
+      flyChip(seatBot, potChipEl, { red: true });
       finish({});
       return;
     }
@@ -371,6 +544,8 @@ export function init() {
       log(decision.action === 'raise' ? `Bot raises $${amt}.` : `Bot bets $${amt}.`);
       renderBanks();
       renderPot();
+      flyChip(seatBot, potChipEl, { red: true });
+      if (amt >= 50) flyChip(seatBot, potChipEl, { red: true, delay: 80 });
       // give hero a call/fold opportunity
       offerCallOrFold(amt);
     }
@@ -385,6 +560,7 @@ export function init() {
       state.heroBet += call;
       renderBanks();
       renderPot();
+      flyChip(seatHero, potChipEl);
       log(`You call $${call}.`);
       finish({});
     });
@@ -408,7 +584,12 @@ export function init() {
       summary = `You folded. Bot wins $${state.pot}.`;
       seatBot?.classList.add('is-winner');
       seatHero?.classList.add('is-folded');
+      // Hero folds: hero cards slide off, bot reveals its hand (flip).
+      foldCards(heroCardsEl);
       renderBotCards({ reveal: true });
+      flipCards(botCardsEl);
+      showHandBanner('You fold', 'loss');
+      setTimeout(() => flyChip(potChipEl, seatBot, { red: true }), 250);
     } else if (botFolded) {
       adjustBalance(state.pot, { game: 'draw', reason: 'win' });
       result = 'win';
@@ -416,7 +597,9 @@ export function init() {
       summary = `Bot folded. You win $${state.pot}.`;
       seatHero?.classList.add('is-winner');
       seatBot?.classList.add('is-folded');
-      renderBotCards({ reveal: true });
+      foldCards(botCardsEl);
+      showHandBanner('Bot folds — pot is yours');
+      setTimeout(() => flyChip(potChipEl, seatHero), 250);
     } else {
       // Showdown
       const heroSolved = Hand.solve(heroShort);
@@ -467,7 +650,30 @@ export function init() {
 
       renderHeroCards({ winIdx: heroWinIdx });
       renderBotCards({ reveal: true, winIdx: botWinIdx });
+      // Flip the bot cards from face-down to face-up
+      flipCards(botCardsEl);
       log(summary, result === 'win' ? 'win' : (result === 'loss' ? 'loss' : ''));
+
+      // Show hand-rank banner after the flip lands
+      const bannerKind = result === 'loss' ? 'loss' : '';
+      const bannerText = result === 'push'
+        ? `Split pot · ${heroDesc}`
+        : (heroWon ? heroDesc : botDesc);
+      setTimeout(() => showHandBanner(bannerText, bannerKind), 420);
+
+      // Pot sweep
+      setTimeout(() => {
+        if (heroWon && botWon) {
+          flyChip(potChipEl, seatHero);
+          flyChip(potChipEl, seatBot, { red: true, delay: 80 });
+        } else if (heroWon) {
+          flyChip(potChipEl, seatHero);
+          flyChip(potChipEl, seatHero, { delay: 90 });
+        } else {
+          flyChip(potChipEl, seatBot, { red: true });
+          flyChip(potChipEl, seatBot, { red: true, delay: 90 });
+        }
+      }, 700);
     }
 
     renderBanks();
