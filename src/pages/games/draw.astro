@@ -29,11 +29,13 @@ import '../../styles/games.css';
 
       <div class="flex justify-center gap-2 mb-6" data-bot-cards aria-label="Bot cards"></div>
 
-      <div class="flex justify-center mb-6">
+      <div class="flex flex-col items-center gap-3 mb-6">
         <span class="felt-pot" aria-label="Pot">
           <span class="chip-dot" aria-hidden="true"></span>
           POT <span data-pot>$0</span>
         </span>
+        <div data-draw-status hidden></div>
+        <div data-hand-reveal hidden></div>
       </div>
 
       <div class="flex justify-center gap-2 mb-4" data-hero-cards aria-label="Your cards"></div>
@@ -57,8 +59,8 @@ import '../../styles/games.css';
     <div class="game-action-bar sticky-mobile mt-6" data-action-bar role="group" aria-label="Game actions"></div>
 
     <div class="mt-6">
-      <p class="stat-label mb-2">Hand log</p>
-      <div class="game-log" data-game-log aria-live="polite"></div>
+      <p class="stat-label mb-2">Action log</p>
+      <div data-game-log aria-live="polite"></div>
     </div>
   </section>
 
