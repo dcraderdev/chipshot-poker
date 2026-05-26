@@ -1,0 +1,134 @@
+---
+// MutedToggle — floating round button for muting/unmuting Tone.js SFX.
+// Wires up to src/lib/sounds.js (isMuted/setMuted/play) and stays in sync
+// with the `chipshot:muted` window event so multiple instances agree.
+---
+<button
+  type="button"
+  id="cs-muted-toggle"
+  class="cs-muted-toggle"
+  aria-label="Sound on"
+  aria-pressed="false"
+  title="Toggle sound"
+>
+  {/* Speaker (unmuted) icon */}
+  <svg class="cs-muted-toggle__icon cs-muted-toggle__icon--on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polygon points="3 10 3 14 7 14 12 19 12 5 7 10 3 10" fill="currentColor" stroke="none" />
+    <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+    <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+  </svg>
+  {/* Speaker (muted) icon */}
+  <svg class="cs-muted-toggle__icon cs-muted-toggle__icon--off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polygon points="3 10 3 14 7 14 12 19 12 5 7 10 3 10" fill="currentColor" stroke="none" />
+    <line x1="16" y1="9" x2="22" y2="15" />
+    <line x1="22" y1="9" x2="16" y2="15" />
+  </svg>
+</button>
+
+<style>
+  .cs-muted-toggle {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border-radius: 9999px;
+    background: radial-gradient(
+      ellipse at center,
+      var(--color-felt) 0%,
+      var(--color-felt-deep) 80%
+    );
+    color: var(--color-gold-bright);
+    border: 1px solid var(--color-gold);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.45),
+      inset 0 0 0 1px var(--color-gold-deep);
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease, color 120ms ease, border-color 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cs-muted-toggle:hover {
+    color: var(--color-gold-bright);
+    border-color: var(--color-gold-bright);
+    box-shadow:
+      0 3px 10px rgba(0, 0, 0, 0.55),
+      inset 0 0 0 1px var(--color-gold);
+    transform: translateY(-1px);
+  }
+  .cs-muted-toggle:active {
+    transform: translateY(0);
+  }
+  .cs-muted-toggle:focus-visible {
+    outline: 2px solid var(--color-gold-bright);
+    outline-offset: 2px;
+  }
+  .cs-muted-toggle__icon {
+    display: none;
+  }
+  .cs-muted-toggle[data-muted="false"] .cs-muted-toggle__icon--on {
+    display: block;
+  }
+  .cs-muted-toggle[data-muted="true"] .cs-muted-toggle__icon--off {
+    display: block;
+  }
+  .cs-muted-toggle[data-muted="true"] {
+    color: var(--color-gold-deep);
+  }
+</style>
+
+<script>
+  import { isMuted, setMuted, play } from '../lib/sounds.js';
+
+  function syncButton(btn: HTMLButtonElement, muted: boolean) {
+    btn.dataset.muted = muted ? 'true' : 'false';
+    btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    btn.setAttribute('aria-label', muted ? 'Sound off' : 'Sound on');
+    btn.setAttribute('title', muted ? 'Sound off — click to enable' : 'Sound on — click to mute');
+  }
+
+  function init() {
+    const btn = document.getElementById('cs-muted-toggle') as HTMLButtonElement | null;
+    if (!btn) return;
+    if (btn.dataset.csBound === '1') return;
+    btn.dataset.csBound = '1';
+
+    syncButton(btn, isMuted());
+
+    btn.addEventListener('click', () => {
+      const next = !isMuted();
+      setMuted(next);
+      syncButton(btn, next);
+      // Only play feedback when unmuting (we just turned audio on).
+      if (!next) {
+        try { play('click'); } catch (_) {}
+      }
+    });
+
+    // Stay in sync if some other code (or another instance) flips the pref.
+    window.addEventListener('chipshot:muted', (e: Event) => {
+      const detail = (e as CustomEvent<{ muted: boolean }>).detail;
+      const muted = detail?.muted ?? isMuted();
+      syncButton(btn, muted);
+    });
+
+    // Keep in sync across tabs.
+    window.addEventListener('storage', (e: StorageEvent) => {
+      if (e.key === 'chipshot.muted.v1') {
+        syncButton(btn, isMuted());
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, { once: true });
+  } else {
+    init();
+  }
+  // Re-init on Astro view transitions / SPA navigations if used.
+  document.addEventListener('astro:page-load', init);
+</script>

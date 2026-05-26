@@ -1,0 +1,168 @@
+---
+// ChipStack — renders an SVG stack of poker chips at a given dollar amount.
+// Greedy decomposition by denomination; caps at 8 visible chips with a "+more" indicator.
+export interface Props {
+  amount: number;
+  size?: 'sm' | 'md' | 'lg';
+  label?: boolean;
+  ariaLabel?: string;
+}
+
+const { amount, size = 'md', label = false, ariaLabel } = Astro.props;
+
+// Denomination palette — colors track familiar casino chip colors.
+// fill: chip face, pip: center dot, ring: subtle inner color band.
+const DENOMS: Array<{ value: number; fill: string; pip: string; ring: string; name: string }> = [
+  { value: 1000, fill: '#d4af37', pip: '#fff8e1', ring: '#a3851f', name: '$1000' }, // gold
+  { value: 500,  fill: '#6b3fa0', pip: '#f3e8ff', ring: '#3d1f6b', name: '$500'  }, // purple
+  { value: 100,  fill: '#1a1a1a', pip: '#f5f1e8', ring: '#000000', name: '$100'  }, // black
+  { value: 25,   fill: '#1f7a3a', pip: '#f5f1e8', ring: '#0e3d1c', name: '$25'   }, // green
+  { value: 5,    fill: '#c0392b', pip: '#f5f1e8', ring: '#7a1d12', name: '$5'    }, // red
+  { value: 1,    fill: '#f5f1e8', pip: '#d4af37', ring: '#b8b3a3', name: '$1'    }, // white/cream
+];
+
+const SIZES = {
+  sm: { w: 16, h: 5,  offset: 4, pip: 1.4, stroke: 0.8 },
+  md: { w: 24, h: 8,  offset: 6, pip: 2.2, stroke: 1.0 },
+  lg: { w: 36, h: 12, offset: 9, pip: 3.2, stroke: 1.4 },
+};
+
+const dim = SIZES[size];
+const MAX_VISIBLE = 8;
+
+// Greedy decomposition into a list of chip denominations (largest first).
+function decompose(n: number): Array<typeof DENOMS[number]> {
+  const chips: Array<typeof DENOMS[number]> = [];
+  let remaining = Math.max(0, Math.floor(n));
+  for (const d of DENOMS) {
+    while (remaining >= d.value) {
+      chips.push(d);
+      remaining -= d.value;
+    }
+  }
+  return chips;
+}
+
+const allChips = decompose(amount);
+const totalCount = allChips.length;
+const overflow = totalCount > MAX_VISIBLE;
+const visible = overflow ? allChips.slice(0, MAX_VISIBLE) : allChips;
+
+// Render bottom-up: index 0 = bottom of stack (drawn first), last = top.
+// Stack visually from bottom: y position decreases as we go up.
+const stackHeight = visible.length === 0
+  ? dim.h
+  : dim.h + (visible.length - 1) * dim.offset;
+const shadowPad = Math.max(4, dim.h);
+const svgWidth = dim.w + 8;
+const svgHeight = stackHeight + shadowPad + 2;
+
+// Center x; chips drawn as ellipses with rx = w/2, ry = h/2.
+const cx = svgWidth / 2;
+const rx = dim.w / 2;
+const ry = dim.h / 2;
+
+// Bottom chip baseline y (center). Leave room for shadow underneath.
+const baseY = svgHeight - shadowPad / 2 - ry;
+
+const computedLabel = ariaLabel ?? `Stack of $${amount.toLocaleString()} in chips`;
+---
+<div class="chipstack" role="img" aria-label={computedLabel}>
+  <svg
+    width={svgWidth}
+    height={svgHeight}
+    viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    {/* Felt shadow underneath the stack */}
+    <ellipse
+      cx={cx}
+      cy={svgHeight - shadowPad / 4}
+      rx={rx * 1.05}
+      ry={ry * 0.55}
+      fill="rgba(0,0,0,0.45)"
+      filter="blur(1.2px)"
+    />
+
+    {visible.length === 0 && (
+      <ellipse
+        cx={cx}
+        cy={baseY}
+        rx={rx}
+        ry={ry}
+        fill="var(--color-felt-edge)"
+        stroke="var(--color-gold-deep)"
+        stroke-width={dim.stroke}
+        opacity="0.55"
+      />
+    )}
+
+    {visible.map((chip, i) => {
+      // i = 0 is bottom; chip at top draws last so it covers the ones below.
+      const cy = baseY - i * dim.offset;
+      return (
+        <g>
+          {/* Outer ring / chip edge */}
+          <ellipse
+            cx={cx}
+            cy={cy}
+            rx={rx}
+            ry={ry}
+            fill={chip.fill}
+            stroke="var(--color-gold)"
+            stroke-width={dim.stroke}
+          />
+          {/* Inner ring accent */}
+          <ellipse
+            cx={cx}
+            cy={cy}
+            rx={rx * 0.78}
+            ry={ry * 0.62}
+            fill="none"
+            stroke={chip.ring}
+            stroke-width={dim.stroke * 0.6}
+            opacity="0.85"
+          />
+          {/* Center pip */}
+          <ellipse
+            cx={cx}
+            cy={cy}
+            rx={dim.pip}
+            ry={dim.pip * 0.45}
+            fill={chip.pip}
+          />
+        </g>
+      );
+    })}
+  </svg>
+
+  {overflow && (
+    <div class="chipstack__more mono">+{totalCount - MAX_VISIBLE} more</div>
+  )}
+
+  {label && (
+    <div class="mono text-xs text-gold-bright mt-1">${amount.toLocaleString()}</div>
+  )}
+</div>
+
+<style>
+  .chipstack {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    line-height: 1;
+  }
+  .chipstack svg {
+    display: block;
+    overflow: visible;
+  }
+  .chipstack__more {
+    margin-top: 2px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    color: var(--color-gold-bright);
+    opacity: 0.85;
+  }
+</style>

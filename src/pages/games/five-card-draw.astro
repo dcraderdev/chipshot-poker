@@ -1,0 +1,425 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="Five-Card Draw — ChipShot Poker"
+  description="Heads-up five-card draw poker."
+  active="games"
+>
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <header class="mb-6 flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <p class="eyebrow">Heads-up · vs Bot</p>
+        <h1 class="display text-3xl sm:text-4xl text-parchment mt-1">Five-Card Draw</h1>
+        <p class="text-sm text-parchment-soft mt-1">
+          Ante $10 · One draw · Single bet round · Showdown
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="cs-pill" id="fc-status" aria-live="polite">Ready</span>
+        <a href="/games" class="cs-pill" aria-label="Back to lobby">← Lobby</a>
+      </div>
+    </header>
+
+    <!-- Felt / table -->
+    <div class="cs-table relative" aria-label="Poker table">
+      <!-- Opponent seat -->
+      <div class="cs-seat cs-seat--top" id="fc-seat-bot">
+        <div class="cs-seat__name mono text-xs">BOT</div>
+        <div class="cs-seat__stack mono text-xs text-parchment-soft" id="fc-bot-stack">Pro</div>
+        <div class="cs-seat__bet mono text-xs text-gold-bright" id="fc-bot-bet"></div>
+      </div>
+
+      <!-- Pot + hand-name displays in the middle -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
+        <p class="stat-label">Pot</p>
+        <p class="display text-3xl text-gold-bright mono" id="fc-pot">$0</p>
+        <p class="text-xs text-parchment-soft mt-2 mono" id="fc-result"></p>
+      </div>
+
+      <!-- Player seat -->
+      <div class="cs-seat cs-seat--bottom" id="fc-seat-player">
+        <div class="cs-seat__name mono text-xs">YOU</div>
+        <div class="cs-seat__stack mono text-xs text-parchment-soft" id="fc-player-stack">$0</div>
+        <div class="cs-seat__bet mono text-xs text-gold-bright" id="fc-player-bet"></div>
+      </div>
+    </div>
+
+    <!-- Bot hand row -->
+    <div class="panel mt-6">
+      <div class="flex items-center justify-between mb-2">
+        <p class="stat-label">Opponent</p>
+        <p class="mono text-xs text-parchment-soft" id="fc-bot-handname"></p>
+      </div>
+      <div class="cs-hand flex gap-2 flex-wrap justify-center min-h-[100px]" id="fc-bot-hand" aria-label="Opponent cards"></div>
+    </div>
+
+    <!-- Player hand row -->
+    <div class="panel mt-4">
+      <div class="flex items-center justify-between mb-2">
+        <p class="stat-label">Your hand <span class="text-parchment-dim text-[10px]">(click to hold)</span></p>
+        <p class="mono text-xs text-parchment-soft" id="fc-player-handname"></p>
+      </div>
+      <div class="cs-hand flex gap-2 flex-wrap justify-center min-h-[100px]" id="fc-player-hand" aria-label="Your cards"></div>
+    </div>
+
+    <!-- Action bar -->
+    <div class="cs-actionbar mt-5 flex flex-wrap items-center gap-3 justify-center" id="fc-actions">
+      <button class="cs-btn cs-btn--primary" id="fc-deal" type="button">Deal — Ante $10</button>
+      <button class="cs-btn cs-btn--primary hidden" id="fc-draw" type="button">Draw</button>
+      <button class="cs-btn hidden" id="fc-check" type="button">Check</button>
+      <button class="cs-btn cs-btn--primary hidden" id="fc-bet" type="button">Bet $20</button>
+      <button class="cs-btn cs-btn--primary hidden" id="fc-call" type="button">Call $20</button>
+      <button class="cs-btn cs-btn--danger hidden" id="fc-fold" type="button">Fold</button>
+      <button class="cs-btn cs-btn--primary hidden" id="fc-again" type="button">Deal again</button>
+      <a href="/games" class="cs-pill hidden" id="fc-reload">Out of chips — back to lobby</a>
+    </div>
+  </section>
+
+  <script>
+    import { freshShuffled } from '../../lib/deck.js';
+    import { getBalance, adjust, formatChips } from '../../lib/bankroll.js';
+    import { play } from '../../lib/sounds.js';
+    import { record } from '../../lib/history.js';
+    import { evaluate, winners } from '../../lib/poker-eval.js';
+    import { renderCard } from '../../lib/card-svg.js';
+    import { showTutorialOnce } from '../../lib/tutorial.js';
+    import { toast } from '../../lib/toast.js';
+    import {
+      ANTE, BET, newGame, drawReplacements,
+      botHoldIndexes, botRespondToBet, settle,
+    } from '../../lib/games/five-card-draw.js';
+
+    // --- DOM refs ---
+    const $ = (id) => document.getElementById(id);
+    const elPlayerHand = $('fc-player-hand');
+    const elBotHand = $('fc-bot-hand');
+    const elPot = $('fc-pot');
+    const elResult = $('fc-result');
+    const elStatus = $('fc-status');
+    const elPlayerStack = $('fc-player-stack');
+    const elPlayerHN = $('fc-player-handname');
+    const elBotHN = $('fc-bot-handname');
+    const btnDeal = $('fc-deal');
+    const btnDraw = $('fc-draw');
+    const btnCheck = $('fc-check');
+    const btnBet = $('fc-bet');
+    const btnCall = $('fc-call');
+    const btnFold = $('fc-fold');
+    const btnAgain = $('fc-again');
+    const linkReload = $('fc-reload');
+
+    // --- Tutorial (first visit) ---
+    showTutorialOnce('five-card-draw', [
+      { title: 'Ante & deal', body: 'Both seats post a $10 ante into the pot. Press Deal to receive five cards.' },
+      { title: 'Hold cards & draw', body: 'Click any card to mark it Held (gold outline). Press Draw to replace the rest from the deck.' },
+      { title: 'Bet & showdown', body: 'Open with Check or Bet $20. After the bet round, cards flip — best five-card poker hand wins the pot.' },
+    ]);
+
+    // --- State ---
+    let deck = [];
+    let playerHand = [];
+    let botHand = [];
+    const held = new Set();          // player-hold indexes (0..4)
+    let pot = 0;
+    let phase = 'idle';              // idle | pre-draw | post-draw | bet | showdown
+
+    // --- Helpers ---
+    function setStatus(t) { elStatus.textContent = t; }
+    function setPot(n) { pot = n; elPot.textContent = formatChips(n); }
+    function refreshStack() { elPlayerStack.textContent = formatChips(getBalance()); }
+    function show(el, on) { el.classList.toggle('hidden', !on); }
+
+    function ensureFunds() {
+      const bal = getBalance();
+      const need = ANTE + BET; // worst case
+      if (bal < need) {
+        btnDeal.disabled = true;
+        show(linkReload, true);
+        setStatus('Bankroll too low');
+        toast(`Need at least ${formatChips(need)} to play a hand.`, { kind: 'lose' });
+        return false;
+      }
+      btnDeal.disabled = false;
+      show(linkReload, false);
+      return true;
+    }
+
+    function renderPlayerHand({ interactive = false, highlightIdx = [] } = {}) {
+      elPlayerHand.innerHTML = '';
+      playerHand.forEach((card, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'cs-hand__slot';
+        if (interactive) {
+          slot.style.cursor = 'pointer';
+          slot.setAttribute('role', 'button');
+          slot.setAttribute('tabindex', '0');
+          slot.setAttribute('aria-pressed', held.has(idx) ? 'true' : 'false');
+          slot.setAttribute('aria-label', `Card ${idx + 1}: ${card.rank}${card.suit}. Click to ${held.has(idx) ? 'release' : 'hold'}.`);
+        }
+        slot.innerHTML = renderCard(card, { small: false });
+        const cardEl = slot.querySelector('.cs-card');
+        if (held.has(idx)) cardEl.classList.add('cs-card--held');
+        if (highlightIdx.includes(idx)) cardEl.classList.add('cs-card--win');
+        if (interactive) {
+          const toggle = () => {
+            if (held.has(idx)) held.delete(idx); else held.add(idx);
+            play('click');
+            renderPlayerHand({ interactive: true });
+          };
+          slot.addEventListener('click', toggle);
+          slot.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+          });
+        }
+        elPlayerHand.appendChild(slot);
+      });
+    }
+
+    function renderBotHand({ faceDown = true, highlightIdx = [] } = {}) {
+      elBotHand.innerHTML = '';
+      botHand.forEach((card, idx) => {
+        const slot = document.createElement('div');
+        slot.className = 'cs-hand__slot';
+        slot.innerHTML = faceDown ? renderCard(null, { faceDown: true }) : renderCard(card);
+        const cardEl = slot.querySelector('.cs-card');
+        if (!faceDown && highlightIdx.includes(idx)) cardEl.classList.add('cs-card--win');
+        elBotHand.appendChild(slot);
+      });
+    }
+
+    function clearTable() {
+      held.clear();
+      playerHand = [];
+      botHand = [];
+      elPlayerHand.innerHTML = '';
+      elBotHand.innerHTML = '';
+      elPlayerHN.textContent = '';
+      elBotHN.textContent = '';
+      elResult.textContent = '';
+      setPot(0);
+    }
+
+    function showButtons(map) {
+      const all = { deal: btnDeal, draw: btnDraw, check: btnCheck, bet: btnBet, call: btnCall, fold: btnFold, again: btnAgain };
+      for (const k of Object.keys(all)) show(all[k], !!map[k]);
+    }
+
+    // --- Phase transitions ---
+    async function startDeal() {
+      if (!ensureFunds()) return;
+      clearTable();
+      // Ante from player; bot's ante is virtual (added straight to pot).
+      adjust(-ANTE);
+      setPot(ANTE * 2);
+      refreshStack();
+      play('chip');
+
+      // Deal alternating, staggered.
+      const game = newGame();
+      deck = game.deck;
+      playerHand = [];
+      botHand = [];
+      showButtons({});
+      setStatus('Dealing…');
+      phase = 'dealing';
+
+      for (let i = 0; i < 5; i++) {
+        await delay(110);
+        playerHand.push(game.player[i]);
+        play('deal');
+        renderPlayerHand();
+        await delay(110);
+        botHand.push(game.bot[i]);
+        play('deal');
+        renderBotHand({ faceDown: true });
+      }
+
+      // Now interactive.
+      phase = 'pre-draw';
+      setStatus('Click cards to hold, then Draw');
+      renderPlayerHand({ interactive: true });
+      updateHandName();
+      showButtons({ draw: true });
+    }
+
+    function updateHandName() {
+      try {
+        const ev = evaluate(playerHand);
+        elPlayerHN.textContent = ev.descr || ev.name;
+      } catch { elPlayerHN.textContent = ''; }
+    }
+
+    async function doDraw() {
+      showButtons({});
+      setStatus('Drawing…');
+      // Player discards = indexes not held.
+      const discardIdxs = [];
+      for (let i = 0; i < 5; i++) if (!held.has(i)) discardIdxs.push(i);
+      if (discardIdxs.length) {
+        playerHand = drawReplacements(deck, playerHand, discardIdxs);
+        for (let k = 0; k < discardIdxs.length; k++) { play('deal'); await delay(90); }
+      }
+      held.clear();
+      renderPlayerHand({ interactive: false });
+      updateHandName();
+
+      // Bot draw.
+      await delay(250);
+      const botHold = botHoldIndexes(botHand);
+      const botDiscards = [];
+      for (let i = 0; i < 5; i++) if (!botHold.has(i)) botDiscards.push(i);
+      if (botDiscards.length) {
+        botHand = drawReplacements(deck, botHand, botDiscards);
+        for (let k = 0; k < botDiscards.length; k++) { play('deal'); await delay(90); }
+      }
+      renderBotHand({ faceDown: true });
+
+      // Move to bet phase.
+      phase = 'bet';
+      setStatus(`Bot held ${5 - botDiscards.length}, drew ${botDiscards.length}. Your action.`);
+      showButtons({ check: true, bet: true });
+    }
+
+    async function onCheck() {
+      play('click');
+      // Bot also checks — straight to showdown.
+      setStatus('Check. Showdown…');
+      await showdown(0);
+    }
+
+    async function onBet() {
+      if (getBalance() < BET) {
+        toast('Not enough chips to bet.', { kind: 'lose' });
+        return;
+      }
+      adjust(-BET);
+      refreshStack();
+      setPot(pot + BET);
+      play('chip');
+      showButtons({});
+      setStatus('Bot thinking…');
+      await delay(700);
+      const resp = botRespondToBet(botHand);
+      if (resp === 'fold') {
+        play('chip');
+        setStatus('Bot folds.');
+        await botFolds();
+        return;
+      }
+      // Bot calls — pot gains BET (virtual chips from bot).
+      setPot(pot + BET);
+      play('chip');
+      setStatus('Bot calls. Showdown…');
+      await showdown(BET);
+    }
+
+    async function botFolds() {
+      // Player wins pot uncontested.
+      const winnings = pot;
+      adjust(winnings);
+      refreshStack();
+      play('win');
+      elResult.textContent = `Bot folded — you win ${formatChips(winnings)}`;
+      try {
+        const playerEv = evaluate(playerHand);
+        record('five-card-draw', {
+          result: 'win',
+          delta: winnings - ANTE - BET,
+          hand: playerHand.map((c) => c.id),
+          opponentHand: botHand.map((c) => c.id),
+          summary: `Bot folded — ${playerEv.descr || playerEv.name}`,
+        });
+      } catch {}
+      setPot(0);
+      phase = 'over';
+      showButtons({ again: true });
+      ensureFunds();
+    }
+
+    async function showdown(playerExtra) {
+      phase = 'showdown';
+      showButtons({});
+      // Flip bot cards.
+      renderBotHand({ faceDown: false });
+      play('flip');
+      const { outcome, playerEval, botEval } = settle(playerHand, botHand);
+      elPlayerHN.textContent = playerEval.descr || playerEval.name;
+      elBotHN.textContent = botEval.descr || botEval.name;
+
+      await delay(450);
+      // Determine winning card highlights from pokersolver's evaluate cards.
+      let playerHighlight = [];
+      let botHighlight = [];
+      try {
+        const pEv = evaluate(playerHand);
+        const bEv = evaluate(botHand);
+        const ids = (cards) => new Set(cards.map((c) => c.rank + c.suit));
+        const pIds = ids(pEv.cards);
+        const bIds = ids(bEv.cards);
+        playerHand.forEach((c, i) => { if (pIds.has(c.rank + c.suit)) playerHighlight.push(i); });
+        botHand.forEach((c, i) => { if (bIds.has(c.rank + c.suit)) botHighlight.push(i); });
+      } catch {}
+
+      let delta = -ANTE - playerExtra;
+      let summary = '';
+      if (outcome === 'win') {
+        adjust(pot);
+        delta = pot - ANTE - playerExtra;
+        play('win');
+        elResult.textContent = `You win ${formatChips(pot)} — ${playerEval.descr || playerEval.name}`;
+        toast(`Win! ${playerEval.name}`, { kind: 'win' });
+        summary = `Win — ${playerEval.descr || playerEval.name}`;
+        renderPlayerHand({ interactive: false, highlightIdx: playerHighlight });
+        renderBotHand({ faceDown: false });
+      } else if (outcome === 'loss') {
+        play('lose');
+        elResult.textContent = `Bot wins ${formatChips(pot)} — ${botEval.descr || botEval.name}`;
+        toast(`Lose — bot had ${botEval.name}`, { kind: 'lose' });
+        summary = `Loss — bot ${botEval.descr || botEval.name}`;
+        renderBotHand({ faceDown: false, highlightIdx: botHighlight });
+      } else {
+        // Push: split pot.
+        const half = Math.floor(pot / 2);
+        adjust(half);
+        delta = half - ANTE - playerExtra;
+        play('push');
+        elResult.textContent = `Split pot — ${playerEval.descr || playerEval.name}`;
+        toast('Split pot', {});
+        summary = `Push — ${playerEval.descr || playerEval.name}`;
+        renderPlayerHand({ interactive: false, highlightIdx: playerHighlight });
+        renderBotHand({ faceDown: false, highlightIdx: botHighlight });
+      }
+      refreshStack();
+      setPot(0);
+      try {
+        record('five-card-draw', {
+          result: outcome,
+          delta,
+          hand: playerHand.map((c) => c.id),
+          opponentHand: botHand.map((c) => c.id),
+          summary,
+        });
+      } catch {}
+      phase = 'over';
+      showButtons({ again: true });
+      ensureFunds();
+    }
+
+    function delay(ms) { return new Promise((r) => setTimeout(r, ms)); }
+
+    // --- Event wiring ---
+    btnDeal.addEventListener('click', startDeal);
+    btnAgain.addEventListener('click', startDeal);
+    btnDraw.addEventListener('click', doDraw);
+    btnCheck.addEventListener('click', onCheck);
+    btnBet.addEventListener('click', onBet);
+    btnFold.addEventListener('click', () => {/* unused — player never gets a fold prompt */});
+    btnCall.addEventListener('click', () => {/* unused — single-round, player acts first */});
+
+    // Init.
+    refreshStack();
+    ensureFunds();
+    setStatus('Ready');
+  </script>
+</PokerLayout>

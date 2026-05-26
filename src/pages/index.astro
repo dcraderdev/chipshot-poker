@@ -1,52 +1,76 @@
 ---
 import PokerLayout from '../layouts/PokerLayout.astro';
+
+const games = [
+  {
+    href: '/games/holdem',
+    name: "Texas Hold'em",
+    tag: '6-MAX · VS BOTS',
+    icon: 'holdem',
+  },
+  {
+    href: '/games/blackjack',
+    name: 'Blackjack',
+    tag: 'SINGLE DECK · VS DEALER',
+    icon: 'blackjack',
+  },
+  {
+    href: '/games/five-card-draw',
+    name: 'Five-Card Draw',
+    tag: 'CLASSIC · 1 DRAW',
+    icon: 'draw',
+  },
+  {
+    href: '/games/video-poker',
+    name: 'Video Poker',
+    tag: 'JACKS OR BETTER',
+    icon: 'video',
+  },
+];
 ---
 <PokerLayout
-  title="ChipShot Poker — Track every chip, every hand, every read"
-  description="A Texas Hold'em hand history journal and live stat tracker. Concept site by dcrader.dev."
+  title="ChipShot Poker — Play four casino classics"
+  description="Play Hold'em, Blackjack, Five-Card Draw, and Video Poker in your browser. $1,000 in play chips, no signup."
   active="home"
 >
   <!-- HERO -->
   <section class="relative overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 lg:pt-20 pb-16 grid lg:grid-cols-12 gap-10 items-center">
       <div class="lg:col-span-7">
-        <span class="eyebrow">No-Limit Hold&apos;em &middot; Live tracker</span>
+        <span class="eyebrow">Four games &middot; No signup &middot; Play chips only</span>
         <h1 class="display mt-5 text-4xl sm:text-5xl lg:text-6xl text-parchment leading-tight">
-          Track every <span class="text-gold-bright italic">chip</span>,<br />
-          every hand,<br />
-          every <span class="text-gold-bright italic">read</span>.
+          Pull up a <span class="text-gold-bright italic">chair</span>.
         </h1>
         <div class="gold-rule my-6 max-w-md"></div>
         <p class="text-parchment-soft text-base sm:text-lg max-w-xl leading-relaxed">
-          A hand history journal and live stat dashboard for the serious recreational player.
-          Capture the cards, the action, and the read — then watch the math tell you who you really are at the table.
+          Hold&apos;em, Blackjack, Five-Card Draw, Video Poker. Stake yourself
+          <span class="text-parchment numeral">$1,000</span> in play chips and learn the felt.
         </p>
         <div class="mt-7 flex flex-wrap gap-3">
-          <a href="/hands" class="btn-gold">See a sample hand</a>
-          <a href="/stats" class="btn-ghost">View stats demo</a>
+          <a href="/games" class="btn-gold">Enter the Floor</a>
+          <a href="/hands" class="btn-ghost">See hand history</a>
         </div>
 
-        <!-- Inline stat strip -->
+        <!-- Inline stake strip -->
         <dl class="mt-10 grid grid-cols-3 gap-px panel overflow-hidden max-w-xl">
           <div class="p-4">
-            <dt class="stat-label">Hands logged</dt>
-            <dd class="stat-value text-2xl mt-1">14,228</dd>
+            <dt class="stat-label">Your stake</dt>
+            <dd class="stat-value text-2xl mt-1">$1,000</dd>
           </div>
           <div class="p-4 border-l border-gold-deep/30">
-            <dt class="stat-label">bb / 100</dt>
-            <dd class="stat-value text-2xl mt-1 win">+8.4</dd>
+            <dt class="stat-label">Signup</dt>
+            <dd class="stat-value text-2xl mt-1">None</dd>
           </div>
           <div class="p-4 border-l border-gold-deep/30">
-            <dt class="stat-label">VPIP</dt>
-            <dd class="stat-value text-2xl mt-1">22.1%</dd>
+            <dt class="stat-label">Real money</dt>
+            <dd class="stat-value text-2xl mt-1">$0</dd>
           </div>
         </dl>
       </div>
 
-      <!-- Hero visual: card fan over a table edge -->
+      <!-- Hero visual: felt table with chip stacks and hole cards -->
       <div class="lg:col-span-5 relative">
         <div class="relative aspect-square max-w-md mx-auto">
-          <!-- Table arc behind -->
           <svg viewBox="0 0 400 400" class="absolute inset-0 w-full h-full" aria-hidden="true">
             <defs>
               <radialGradient id="feltGrad" cx="50%" cy="45%" r="60%">
@@ -77,6 +101,12 @@ import PokerLayout from '../layouts/PokerLayout.astro';
               <ellipse cx="0" cy="0" rx="22" ry="6" fill="#c9302c" stroke="#f0c855" stroke-width="1"/>
               <ellipse cx="0" cy="-6" rx="22" ry="6" fill="#2f6b9a" stroke="#f0c855" stroke-width="1"/>
             </g>
+            <!-- center pot -->
+            <g transform="translate(200,210)">
+              <ellipse cx="0" cy="4" rx="18" ry="5" fill="#0a0a0a" opacity="0.6"/>
+              <ellipse cx="0" cy="0" rx="18" ry="5" fill="#f0c855" stroke="#a3851f" stroke-width="0.8"/>
+              <ellipse cx="0" cy="-5" rx="18" ry="5" fill="#f0c855" stroke="#a3851f" stroke-width="0.8"/>
+            </g>
           </svg>
 
           <!-- Hole cards fanned -->
@@ -93,87 +123,114 @@ import PokerLayout from '../layouts/PokerLayout.astro';
     <div class="gold-rule"></div>
   </section>
 
-  <!-- ANATOMY OF A LOGGED HAND -->
-  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+  <!-- GAMES STRIP -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
     <div class="flex items-end justify-between mb-6">
       <div>
-        <span class="eyebrow">Anatomy of a hand</span>
-        <h2 class="display text-2xl sm:text-3xl text-parchment mt-2">What gets written down.</h2>
+        <span class="eyebrow">The floor</span>
+        <h2 class="display text-2xl sm:text-3xl text-parchment mt-2">Pick your <span class="text-gold-bright italic">game</span>.</h2>
       </div>
-      <span class="stat-label hidden sm:inline mono">$2/5 NL · Seat 4 · BTN</span>
+      <a href="/games" class="stat-label hidden sm:inline hover:text-gold-bright transition-colors">All games &rarr;</a>
     </div>
 
-    <div class="panel p-6 sm:p-8">
-      <ol class="space-y-3 mono text-sm leading-relaxed">
-        <li class="flex gap-4">
-          <span class="text-gold-bright w-16 shrink-0">Pre</span>
-          <span class="text-parchment-soft"><span class="text-parchment">Open 2.5bb BTN</span> with <span class="text-parchment">A&#9824; K&#9829;</span>. BB calls. <span class="text-parchment-dim">// villain wide, ~38% defend</span></span>
-        </li>
-        <li class="flex gap-4">
-          <span class="text-gold-bright w-16 shrink-0">Flop</span>
-          <span class="text-parchment-soft"><span class="text-parchment">K&#9827; 7&#9830; 3&#9824;</span> &middot; cbet 33% pot, BB call. <span class="text-parchment-dim">// top pair top kicker, range bet</span></span>
-        </li>
-        <li class="flex gap-4">
-          <span class="text-gold-bright w-16 shrink-0">Turn</span>
-          <span class="text-parchment-soft"><span class="text-parchment">5&#9824;</span> &middot; check-back. <span class="text-parchment-dim">// pot control on dry board, induce river bluff</span></span>
-        </li>
-        <li class="flex gap-4">
-          <span class="text-gold-bright w-16 shrink-0">River</span>
-          <span class="text-parchment-soft"><span class="text-parchment">J&#9830;</span> &middot; BB leads 60% pot. Call. <span class="text-parchment-dim">// blocks AK/KJ, captures bluffs</span></span>
-        </li>
-        <li class="flex gap-4">
-          <span class="text-gold-bright w-16 shrink-0">Result</span>
-          <span class="win">+$148</span>
-          <span class="text-parchment-dim">// villain showed Q&#9830;T&#9830;, missed FD</span>
-        </li>
-      </ol>
-      <div class="gold-rule my-6"></div>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-        <div><dt class="stat-label">Tags</dt><dd class="mono text-xs text-parchment mt-1">value · TPTK · river call</dd></div>
-        <div><dt class="stat-label">Equity vs. range</dt><dd class="numeral text-lg text-parchment mt-1">72.4%</dd></div>
-        <div><dt class="stat-label">Pot odds called</dt><dd class="numeral text-lg text-parchment mt-1">3.3 : 1</dd></div>
-        <div><dt class="stat-label">Read score</dt><dd class="numeral text-lg win mt-1">+2</dd></div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {games.map((g) => (
+        <a href={g.href} class="cs-game-card group block">
+          <div class="cs-game-card__art">
+            {g.icon === 'holdem' && (
+              <svg viewBox="0 0 80 80" class="w-[60px] h-[60px]" aria-hidden="true">
+                <rect x="14" y="20" width="22" height="32" rx="3" fill="#f4ecd4" stroke="#a3851f" stroke-width="1" transform="rotate(-10 25 36)"/>
+                <text x="25" y="38" text-anchor="middle" font-family="Playfair Display, serif" font-size="14" fill="#0a0a0a" transform="rotate(-10 25 36)">A</text>
+                <text x="25" y="50" text-anchor="middle" font-size="12" fill="#0a0a0a" transform="rotate(-10 25 36)">&#9824;</text>
+                <rect x="44" y="20" width="22" height="32" rx="3" fill="#f4ecd4" stroke="#a3851f" stroke-width="1" transform="rotate(10 55 36)"/>
+                <text x="55" y="38" text-anchor="middle" font-family="Playfair Display, serif" font-size="14" fill="#c9302c" transform="rotate(10 55 36)">K</text>
+                <text x="55" y="50" text-anchor="middle" font-size="12" fill="#c9302c" transform="rotate(10 55 36)">&#9829;</text>
+              </svg>
+            )}
+            {g.icon === 'blackjack' && (
+              <svg viewBox="0 0 80 80" class="w-[60px] h-[60px]" aria-hidden="true">
+                <rect x="18" y="18" width="22" height="32" rx="3" fill="#f4ecd4" stroke="#a3851f" stroke-width="1" transform="rotate(-8 29 34)"/>
+                <text x="29" y="36" text-anchor="middle" font-family="Playfair Display, serif" font-size="13" fill="#0a0a0a" transform="rotate(-8 29 34)">A</text>
+                <text x="29" y="48" text-anchor="middle" font-size="11" fill="#0a0a0a" transform="rotate(-8 29 34)">&#9824;</text>
+                <rect x="40" y="20" width="22" height="32" rx="3" fill="#f4ecd4" stroke="#a3851f" stroke-width="1" transform="rotate(8 51 36)"/>
+                <text x="51" y="38" text-anchor="middle" font-family="Playfair Display, serif" font-size="13" fill="#0a0a0a" transform="rotate(8 51 36)">J</text>
+                <text x="51" y="50" text-anchor="middle" font-size="11" fill="#0a0a0a" transform="rotate(8 51 36)">&#9824;</text>
+                <text x="40" y="72" text-anchor="middle" font-family="Playfair Display, serif" font-style="italic" font-size="10" fill="#d4af37">21</text>
+              </svg>
+            )}
+            {g.icon === 'draw' && (
+              <svg viewBox="0 0 80 80" class="w-[60px] h-[60px]" aria-hidden="true">
+                <g transform="translate(40,40)">
+                  <rect x="-22" y="-16" width="14" height="20" rx="2" fill="#f4ecd4" stroke="#a3851f" stroke-width="0.8" transform="rotate(-20)"/>
+                  <rect x="-14" y="-17" width="14" height="20" rx="2" fill="#f4ecd4" stroke="#a3851f" stroke-width="0.8" transform="rotate(-10)"/>
+                  <rect x="-7" y="-18" width="14" height="20" rx="2" fill="#f4ecd4" stroke="#a3851f" stroke-width="0.8"/>
+                  <rect x="0" y="-17" width="14" height="20" rx="2" fill="#f4ecd4" stroke="#a3851f" stroke-width="0.8" transform="rotate(10)"/>
+                  <rect x="8" y="-16" width="14" height="20" rx="2" fill="#f4ecd4" stroke="#a3851f" stroke-width="0.8" transform="rotate(20)"/>
+                </g>
+                <text x="40" y="70" text-anchor="middle" font-size="9" fill="#d4af37" font-family="ui-monospace,monospace">5</text>
+              </svg>
+            )}
+            {g.icon === 'video' && (
+              <svg viewBox="0 0 80 80" class="w-[60px] h-[60px]" aria-hidden="true">
+                <rect x="10" y="18" width="60" height="44" rx="4" fill="#082619" stroke="#d4af37" stroke-width="1.2"/>
+                <g transform="translate(15,28)">
+                  <rect x="0" y="0" width="9" height="14" rx="1" fill="#f4ecd4"/>
+                  <rect x="11" y="0" width="9" height="14" rx="1" fill="#f4ecd4"/>
+                  <rect x="22" y="0" width="9" height="14" rx="1" fill="#f4ecd4"/>
+                  <rect x="33" y="0" width="9" height="14" rx="1" fill="#f4ecd4"/>
+                  <rect x="44" y="0" width="9" height="14" rx="1" fill="#f4ecd4"/>
+                </g>
+                <text x="40" y="56" text-anchor="middle" font-family="ui-monospace,monospace" font-size="7" fill="#f0c855">JACKS OR BETTER</text>
+              </svg>
+            )}
+          </div>
+          <h3 class="display text-lg text-parchment group-hover:text-gold-bright transition-colors mt-3">{g.name}</h3>
+          <p class="mono text-xs text-gold-bright mt-1">{g.tag}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <div class="gold-rule max-w-7xl mx-auto"></div>
+
+  <!-- HOW IT WORKS -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <div class="mb-6">
+      <span class="eyebrow">House rules</span>
+      <h2 class="display text-2xl sm:text-3xl text-parchment mt-2">How it <span class="text-gold-bright italic">works</span>.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+      <div class="panel p-6">
+        <span class="stat-label">01 &middot; Buy-in</span>
+        <h3 class="display text-xl text-gold-bright mt-2">Stake yourself</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          <span class="numeral text-parchment">$1,000</span> in play chips, stored in your browser. No signup, no email, no card.
+        </p>
+      </div>
+      <div class="panel p-6">
+        <span class="stat-label">02 &middot; Sit down</span>
+        <h3 class="display text-xl text-gold-bright mt-2">Play any game</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          Hold&apos;em vs bots, Blackjack vs the dealer, Five-Card Draw, Video Poker. Switch tables whenever.
+        </p>
+      </div>
+      <div class="panel p-6">
+        <span class="stat-label">03 &middot; Keep score</span>
+        <h3 class="display text-xl text-gold-bright mt-2">Track everything</h3>
+        <p class="text-parchment-soft text-sm mt-2 leading-relaxed">
+          Hands and stats logged automatically. Bust out? Reload the page and you&apos;re back at <span class="numeral text-parchment">$1,000</span>.
+        </p>
       </div>
     </div>
   </section>
 
-  <!-- PREVIEW CARDS -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-    <div class="flex items-end justify-between mb-6">
-      <h2 class="display text-2xl sm:text-3xl text-parchment">Walk the table</h2>
-      <span class="stat-label hidden sm:inline">Demo &mdash; three views</span>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-5">
-      <a href="/hands" class="panel p-6 hover:border-gold transition-colors group block">
-        <span class="stat-label">View &rarr;</span>
-        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Hand history</h3>
-        <p class="text-parchment-soft text-sm mt-2">Twelve sample hands. One expanded with full action by street.</p>
-        <div class="mt-4 flex gap-1">
-          <span class="card black">A&#9824;</span>
-          <span class="card red">K&#9829;</span>
-        </div>
-      </a>
-      <a href="/stats" class="panel p-6 hover:border-gold transition-colors group block">
-        <span class="stat-label">View &rarr;</span>
-        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Stats dashboard</h3>
-        <p class="text-parchment-soft text-sm mt-2">KPI grid, bankroll line chart, positional bars, showdown donut.</p>
-        <div class="mt-4 mono text-xs text-parchment-soft flex justify-between max-w-[160px]">
-          <span>VPIP 22.1</span><span>PFR 17.6</span>
-        </div>
-      </a>
-      <a href="/play" class="panel p-6 hover:border-gold transition-colors group block">
-        <span class="stat-label">View &rarr;</span>
-        <h3 class="display text-2xl text-gold-bright mt-2 group-hover:underline">Review walkthrough</h3>
-        <p class="text-parchment-soft text-sm mt-2">Five-step flow: capture, tag, read, equity, save.</p>
-        <div class="mt-4 flex gap-2 mono text-xs">
-          <span class="text-gold">1</span><span class="text-parchment-dim">&rsaquo;</span>
-          <span class="text-gold">2</span><span class="text-parchment-dim">&rsaquo;</span>
-          <span class="text-gold">3</span><span class="text-parchment-dim">&rsaquo;</span>
-          <span class="text-gold">4</span><span class="text-parchment-dim">&rsaquo;</span>
-          <span class="text-gold">5</span>
-        </div>
-      </a>
-    </div>
+  <!-- FOOTER NOTE -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="gold-rule mb-6"></div>
+    <p class="text-center mono text-xs text-parchment-dim">
+      Built for fun. No real money. Open source &mdash; see this concept site by
+      <a href="https://dcrader.dev" class="text-gold-bright hover:underline">Donovan Crader</a>.
+    </p>
   </section>
 </PokerLayout>

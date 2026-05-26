@@ -1,329 +1,324 @@
 ---
 import PokerLayout from '../layouts/PokerLayout.astro';
-
-type Suit = 'spade' | 'heart' | 'diamond' | 'club';
-const suitChar: Record<Suit, string> = {
-  spade: '♠',
-  heart: '♥',
-  diamond: '♦',
-  club: '♣',
-};
-const suitColor: Record<Suit, 'red' | 'black'> = {
-  spade: 'black',
-  heart: 'red',
-  diamond: 'red',
-  club: 'black',
-};
-
-type Card = { rank: string; suit: Suit };
-const c = (rank: string, suit: Suit): Card => ({ rank, suit });
-
-const hands = [
-  {
-    id: 'H-2241',
-    date: 'May 14',
-    stakes: '$1/$2 NL',
-    position: 'BTN',
-    hole: [c('A', 'spade'), c('K', 'heart')],
-    board: [c('K', 'club'), c('7', 'diamond'), c('2', 'spade'), c('Q', 'heart'), c('5', 'club')],
-    summary: '3-bet pre, c-bet flop, value bet river',
-    result: 184,
-  },
-  {
-    id: 'H-2240',
-    date: 'May 14',
-    stakes: '$1/$2 NL',
-    position: 'CO',
-    hole: [c('J', 'diamond'), c('J', 'club')],
-    board: [c('A', 'spade'), c('8', 'heart'), c('3', 'spade')],
-    summary: 'Open-raised, c-bet small, folded to check-raise',
-    result: -42,
-  },
-  {
-    id: 'H-2239',
-    date: 'May 13',
-    stakes: '$2/$5 NL',
-    position: 'BB',
-    hole: [c('9', 'club'), c('9', 'diamond')],
-    board: [c('9', 'heart'), c('4', 'spade'), c('2', 'diamond'), c('7', 'club')],
-    summary: 'Set on flop, check-raise turn, opponent folded',
-    result: 295,
-  },
-  {
-    id: 'H-2238',
-    date: 'May 13',
-    stakes: '$2/$5 NL',
-    position: 'UTG',
-    hole: [c('A', 'club'), c('Q', 'club')],
-    board: [c('K', 'diamond'), c('9', 'club'), c('4', 'club'), c('2', 'club')],
-    summary: 'Flopped flush draw, turned the nuts, value-bet river',
-    result: 410,
-  },
-  {
-    id: 'H-2237',
-    date: 'May 12',
-    stakes: '$1/$2 NL',
-    position: 'SB',
-    hole: [c('K', 'heart'), c('Q', 'spade')],
-    board: [c('T', 'heart'), c('5', 'diamond'), c('3', 'club')],
-    summary: '3-bet defended, c-bet bricked, gave up turn',
-    result: -28,
-  },
-  {
-    id: 'H-2236',
-    date: 'May 12',
-    stakes: '$1/$2 NL',
-    position: 'BTN',
-    hole: [c('T', 'diamond'), c('T', 'spade')],
-    board: [c('J', 'spade'), c('T', 'heart'), c('6', 'club'), c('A', 'diamond'), c('K', 'club')],
-    summary: 'Set on flop, called river bluff-catch',
-    result: 220,
-  },
-  {
-    id: 'H-2235',
-    date: 'May 11',
-    stakes: '$1/$2 NL',
-    position: 'MP',
-    hole: [c('A', 'heart'), c('J', 'heart')],
-    board: [c('Q', 'heart'), c('7', 'heart'), c('2', 'spade')],
-    summary: 'Nut flush draw, c-bet flop, semi-bluff jam turn folded out',
-    result: 96,
-  },
-  {
-    id: 'H-2234',
-    date: 'May 11',
-    stakes: '$1/$2 NL',
-    position: 'CO',
-    hole: [c('7', 'spade'), c('6', 'spade')],
-    board: [c('5', 'spade'), c('8', 'spade'), c('K', 'diamond')],
-    summary: 'Open-limp call, flopped straight + flush draw, bombed turn',
-    result: 132,
-  },
-  {
-    id: 'H-2233',
-    date: 'May 10',
-    stakes: '$2/$5 NL',
-    position: 'HJ',
-    hole: [c('A', 'diamond'), c('K', 'diamond')],
-    board: [c('Q', 'spade'), c('J', 'club'), c('4', 'heart'), c('8', 'spade'), c('3', 'diamond')],
-    summary: '4-bet pre, c-bet, gave up turn after pickup raise',
-    result: -195,
-  },
-  {
-    id: 'H-2232',
-    date: 'May 10',
-    stakes: '$2/$5 NL',
-    position: 'BTN',
-    hole: [c('Q', 'club'), c('Q', 'heart')],
-    board: [c('8', 'diamond'), c('4', 'club'), c('2', 'heart')],
-    summary: 'Iso-raised limpers, c-bet, river value bet called',
-    result: 165,
-  },
-  {
-    id: 'H-2231',
-    date: 'May 09',
-    stakes: '$1/$2 NL',
-    position: 'BB',
-    hole: [c('8', 'heart'), c('8', 'spade')],
-    board: [c('A', 'club'), c('K', 'heart'), c('7', 'spade')],
-    summary: 'Defended BB, check-folded flop',
-    result: -16,
-  },
-  {
-    id: 'H-2230',
-    date: 'May 09',
-    stakes: '$1/$2 NL',
-    position: 'CO',
-    hole: [c('A', 'club'), c('5', 'club')],
-    board: [c('K', 'club'), c('T', 'club'), c('4', 'diamond'), c('2', 'club')],
-    summary: 'Nut flush by turn, value-bet thin, called by 2-pair',
-    result: 248,
-  },
-];
-
-const renderCard = (card: Card) => {
-  const color = suitColor[card.suit];
-  return { rank: card.rank, suit: suitChar[card.suit], color };
-};
 ---
 <PokerLayout
-  title="Hand history — ChipShot Poker"
-  description="A demo hand history feed for a Texas Hold'em tracker. Twelve sample hands with action breakdown."
+  title="Hand History — ChipShot Poker"
+  description="Every hand you've played."
   active="hands"
 >
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
-    <div class="flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <span class="eyebrow">Journal</span>
-        <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Hand history</h1>
-        <p class="text-parchment-soft text-sm mt-2 max-w-xl">
-          The last twelve hands you saved. Tap any row in production to expand. One sample is opened below.
-        </p>
-      </div>
-      <dl class="grid grid-cols-3 gap-px panel overflow-hidden">
-        <div class="px-4 py-3">
-          <dt class="stat-label">Session</dt>
-          <dd class="stat-value text-lg">+$1,469</dd>
-        </div>
-        <div class="px-4 py-3 border-l border-gold-deep/30">
-          <dt class="stat-label">Hours</dt>
-          <dd class="stat-value text-lg">5.8</dd>
-        </div>
-        <div class="px-4 py-3 border-l border-gold-deep/30">
-          <dt class="stat-label">Hands</dt>
-          <dd class="stat-value text-lg">142</dd>
-        </div>
-      </dl>
+    <div>
+      <span class="eyebrow">Journal</span>
+      <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Your Hands</h1>
+      <p class="text-parchment-soft text-sm mt-2 max-w-xl">
+        Every hand from every game, kept locally on this device. The last 50 per game.
+      </p>
     </div>
     <div class="gold-rule mt-6"></div>
   </section>
 
-  <!-- EXPANDED HAND -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-    <article class="panel-gold p-5 sm:p-7">
-      <header class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="mono text-xs text-gold">H-2241</span>
-          <span class="stat-label">$1/$2 NL &middot; BTN &middot; May 14</span>
-        </div>
-        <div class="mono text-lg win">+$184</div>
-      </header>
+  <!-- FILTER CHIPS -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+    <div class="flex flex-wrap gap-2" role="tablist" aria-label="Filter by game" id="filter-row">
+      <button class="cs-pill is-active" data-filter="all" role="tab" aria-selected="true">All</button>
+      <button class="cs-pill" data-filter="holdem" role="tab" aria-selected="false">Hold'em</button>
+      <button class="cs-pill" data-filter="blackjack" role="tab" aria-selected="false">Blackjack</button>
+      <button class="cs-pill" data-filter="five-card-draw" role="tab" aria-selected="false">Five-Card Draw</button>
+      <button class="cs-pill" data-filter="video-poker" role="tab" aria-selected="false">Video Poker</button>
+    </div>
+  </section>
 
-      <div class="mt-5 grid lg:grid-cols-12 gap-6">
-        <!-- Cards column -->
-        <div class="lg:col-span-5">
-          <p class="stat-label">Your hand</p>
-          <div class="flex gap-2 mt-2">
-            <span class="card lg black">A&#9824;</span>
-            <span class="card lg red">K&#9829;</span>
-          </div>
-
-          <p class="stat-label mt-5">Board</p>
-          <div class="flex gap-2 mt-2 flex-wrap">
-            <span class="card lg black">K&#9827;</span>
-            <span class="card lg red">7&#9830;</span>
-            <span class="card lg black">2&#9824;</span>
-            <span class="card lg red">Q&#9829;</span>
-            <span class="card lg black">5&#9827;</span>
-          </div>
-
-          <div class="mt-5 panel p-4">
-            <p class="stat-label">Result hand</p>
-            <p class="text-parchment mt-1">Top pair, top kicker on a paired-river runout.</p>
-            <p class="stat-label mt-3">Read on villain</p>
-            <p class="text-parchment-soft text-sm mt-1">Loose-passive reg, 38/12 over 220 hands. River raise = nuts only. Flat call line for value.</p>
-          </div>
-        </div>
-
-        <!-- Action by street -->
-        <div class="lg:col-span-7">
-          <p class="stat-label">Action by street</p>
-          <ol class="mt-2 space-y-3">
-            <li class="panel p-4">
-              <div class="flex items-center justify-between">
-                <span class="display text-lg text-gold-bright">Preflop</span>
-                <span class="mono text-xs text-parchment-dim">pot $9</span>
-              </div>
-              <p class="text-sm text-parchment-soft mt-1">
-                CO opens to $6. Hero (BTN) 3-bets to $20. Folds to CO. CO calls.
-              </p>
-            </li>
-            <li class="panel p-4">
-              <div class="flex items-center justify-between">
-                <span class="display text-lg text-gold-bright">Flop &mdash; K&#9827; 7&#9830; 2&#9824;</span>
-                <span class="mono text-xs text-parchment-dim">pot $43</span>
-              </div>
-              <p class="text-sm text-parchment-soft mt-1">
-                CO checks. Hero c-bets $14 (33%). CO calls.
-              </p>
-            </li>
-            <li class="panel p-4">
-              <div class="flex items-center justify-between">
-                <span class="display text-lg text-gold-bright">Turn &mdash; Q&#9829;</span>
-                <span class="mono text-xs text-parchment-dim">pot $71</span>
-              </div>
-              <p class="text-sm text-parchment-soft mt-1">
-                CO checks. Hero barrels $42 (60%). CO calls. Range now capped at Kx / draws.
-              </p>
-            </li>
-            <li class="panel p-4">
-              <div class="flex items-center justify-between">
-                <span class="display text-lg text-gold-bright">River &mdash; 5&#9827;</span>
-                <span class="mono text-xs text-parchment-dim">pot $155</span>
-              </div>
-              <p class="text-sm text-parchment-soft mt-1">
-                CO checks. Hero value-bets $58 (37%). CO calls with KJ. Hero wins.
-              </p>
-            </li>
-          </ol>
-
-          <div class="mt-4 flex flex-wrap items-center gap-2 mono text-xs">
-            <span class="eyebrow">Tags</span>
-            <span class="px-2 py-1 border border-gold-deep/40 text-parchment-soft rounded-sm">3-bet pot</span>
-            <span class="px-2 py-1 border border-gold-deep/40 text-parchment-soft rounded-sm">Thin value</span>
-            <span class="px-2 py-1 border border-gold-deep/40 text-parchment-soft rounded-sm">Capped range</span>
-          </div>
-        </div>
+  <!-- STAT STRIP -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+    <dl class="grid grid-cols-3 gap-px panel overflow-hidden" id="stat-strip">
+      <div class="px-4 py-3">
+        <dt class="stat-label">Hands</dt>
+        <dd class="mono text-lg text-parchment mt-1" id="stat-count">0</dd>
       </div>
-    </article>
+      <div class="px-4 py-3 border-l border-gold-deep/30">
+        <dt class="stat-label">Net</dt>
+        <dd class="mono text-lg mt-1" id="stat-net">$0</dd>
+      </div>
+      <div class="px-4 py-3 border-l border-gold-deep/30">
+        <dt class="stat-label">Win rate</dt>
+        <dd class="mono text-lg text-parchment mt-1" id="stat-winrate">—</dd>
+      </div>
+    </dl>
   </section>
 
-  <!-- TABLE OF HANDS -->
-  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pb-20">
-    <div class="flex items-end justify-between mb-3">
-      <h2 class="display text-2xl text-parchment">Recent hands</h2>
-      <span class="stat-label hidden sm:inline">Sorted: newest</span>
+  <!-- LIST -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pb-20">
+    <div id="history-list" class="space-y-3" aria-live="polite"></div>
+
+    <!-- Empty state (hidden when list has entries) -->
+    <div id="history-empty" class="panel p-8 text-center hidden">
+      <p class="display text-2xl text-gold-bright">No hands logged yet</p>
+      <p class="text-parchment-soft mt-2 text-sm">
+        Sit down at a table to start your journal.
+      </p>
+      <p class="mt-5">
+        <a href="/games" class="btn-gold">Head to the lobby</a>
+      </p>
     </div>
 
-    <div class="panel overflow-hidden">
-      <table class="w-full text-left text-sm">
-        <thead>
-          <tr class="border-b border-gold-deep/40 text-parchment-dim mono text-xs">
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest">ID</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest hidden sm:table-cell">Date</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest hidden md:table-cell">Stakes</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest hidden sm:table-cell">Pos</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest">Hand</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest hidden lg:table-cell">Board</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest hidden xl:table-cell">Action</th>
-            <th scope="col" class="px-3 sm:px-4 py-3 font-semibold tracking-widest text-right">Net</th>
-          </tr>
-        </thead>
-        <tbody>
-          {hands.map((h) => (
-            <tr class="border-b border-gold-deep/15 hover:bg-felt-mid/30">
-              <td class="px-3 sm:px-4 py-3 mono text-xs text-gold">{h.id}</td>
-              <td class="px-3 sm:px-4 py-3 mono text-xs text-parchment-soft hidden sm:table-cell">{h.date}</td>
-              <td class="px-3 sm:px-4 py-3 mono text-xs text-parchment-soft hidden md:table-cell">{h.stakes}</td>
-              <td class="px-3 sm:px-4 py-3 mono text-xs text-parchment hidden sm:table-cell">{h.position}</td>
-              <td class="px-3 sm:px-4 py-3">
-                <div class="flex gap-1">
-                  {h.hole.map((card) => {
-                    const r = renderCard(card);
-                    return <span class={`card ${r.color}`}>{r.rank}{r.suit}</span>;
-                  })}
-                </div>
-              </td>
-              <td class="px-3 sm:px-4 py-3 hidden lg:table-cell">
-                <div class="flex gap-1">
-                  {h.board.map((card) => {
-                    const r = renderCard(card);
-                    return <span class={`card ${r.color}`}>{r.rank}{r.suit}</span>;
-                  })}
-                </div>
-              </td>
-              <td class="px-3 sm:px-4 py-3 text-parchment-soft text-xs hidden xl:table-cell">{h.summary}</td>
-              <td class={`px-3 sm:px-4 py-3 mono font-semibold text-right ${h.result >= 0 ? 'win' : 'loss'}`}>
-                {h.result >= 0 ? '+' : '-'}${Math.abs(h.result)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mt-8 text-center">
-      <a href="/stats" class="btn-gold">See the stats</a>
+    <div class="mt-10 text-center">
+      <button id="clear-history" type="button"
+        class="mono text-xs text-parchment-dim hover:text-loss underline-offset-4 hover:underline transition-colors">
+        Clear all hand history
+      </button>
     </div>
   </section>
+
+  <style is:global>
+    .cs-pill.is-active {
+      color: var(--color-gold-bright);
+      border-color: var(--color-gold);
+      background: rgba(20, 50, 36, 0.85);
+    }
+    .hh-row { transition: border-color .15s ease; }
+    .hh-row[open] { border-color: var(--color-gold-deep); }
+    .hh-row summary { list-style: none; cursor: pointer; }
+    .hh-row summary::-webkit-details-marker { display: none; }
+    .hh-cards { display: flex; flex-wrap: wrap; gap: 8px; }
+    .hh-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .hh-chevron { transition: transform .2s ease; }
+    .hh-row[open] .hh-chevron { transform: rotate(90deg); }
+  </style>
+
+  <script>
+    import { getAllHistory, clearAll } from '../lib/history.js';
+    import { renderCard } from '../lib/card-svg.js';
+    import { formatChips } from '../lib/bankroll.js';
+    import { toast } from '../lib/toast.js';
+
+    const GAME_LABELS = {
+      holdem: "Hold'em",
+      blackjack: "Blackjack",
+      'five-card-draw': "Five-Card Draw",
+      'video-poker': "Video Poker",
+    };
+
+    function labelFor(key) {
+      return GAME_LABELS[key] || key.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    function timeAgo(t) {
+      if (!t) return '';
+      const diff = Date.now() - t;
+      const s = Math.max(1, Math.floor(diff / 1000));
+      if (s < 60) return s + 's ago';
+      const m = Math.floor(s / 60);
+      if (m < 60) return m + 'm ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + 'h ago';
+      const d = Math.floor(h / 24);
+      if (d < 7) return d + 'd ago';
+      const dt = new Date(t);
+      return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    function normalizeResult(r) {
+      if (!r) return 'push';
+      const s = String(r).toLowerCase();
+      if (s === 'win' || s === 'blackjack') return 'win';
+      if (s === 'lose' || s === 'loss' || s === 'bust') return 'lose';
+      if (s === 'push' || s === 'tie' || s === 'draw') return 'push';
+      return s;
+    }
+
+    function resultLabel(raw) {
+      const s = String(raw || '').toLowerCase();
+      if (s === 'blackjack') return 'Blackjack';
+      if (s === 'win') return 'Win';
+      if (s === 'lose' || s === 'loss') return 'Loss';
+      if (s === 'push' || s === 'tie' || s === 'draw') return 'Push';
+      return raw || '—';
+    }
+
+    function deltaText(n) {
+      const v = Number(n) || 0;
+      if (v === 0) return formatChips(0);
+      const sign = v > 0 ? '+' : '−';
+      return sign + formatChips(Math.abs(v));
+    }
+
+    function getCards(entry) {
+      // Be flexible about field names games may write.
+      return entry.hand || entry.cards || entry.playerHand || entry.hole || [];
+    }
+    function getBoard(entry) {
+      return entry.board || entry.community || [];
+    }
+    function getOpponent(entry) {
+      return entry.opponentHand || entry.opponent || entry.dealerHand || entry.villain || [];
+    }
+
+    function flatten(all, filter) {
+      const out = [];
+      for (const game of Object.keys(all)) {
+        if (filter !== 'all' && filter !== game) continue;
+        const list = Array.isArray(all[game]) ? all[game] : [];
+        for (const e of list) {
+          out.push({ ...e, game });
+        }
+      }
+      out.sort((a, b) => (Number(b.t) || 0) - (Number(a.t) || 0));
+      return out;
+    }
+
+    function renderCards(cards) {
+      if (!Array.isArray(cards) || cards.length === 0) return '';
+      return `<div class="hh-cards">${cards.map((c) => renderCard(c, { small: true })).join('')}</div>`;
+    }
+
+    function renderRow(entry, idx) {
+      const result = normalizeResult(entry.result);
+      const delta = Number(entry.delta) || 0;
+      const isWin = result === 'win' || delta > 0;
+      const isLose = result === 'lose' || (delta < 0 && result !== 'push');
+      const resultClass = isWin ? 'win' : isLose ? 'loss' : 'text-parchment-soft';
+      const summary = entry.summary || (isWin ? 'Won the hand.' : isLose ? 'Lost the hand.' : 'Push.');
+
+      const hand = getCards(entry);
+      const board = getBoard(entry);
+      const opp = getOpponent(entry);
+      const hasCards = (hand && hand.length) || (board && board.length) || (opp && opp.length);
+
+      const safeId = 'hh-' + idx;
+
+      return `
+<details class="panel hh-row" id="${safeId}">
+  <summary class="block p-4 sm:p-5">
+    <div class="flex items-center justify-between gap-3">
+      <span class="mono text-xs text-gold uppercase tracking-widest">${labelFor(entry.game)}</span>
+      <span class="mono text-xs text-parchment-dim">${timeAgo(entry.t)}</span>
+    </div>
+    <div class="mt-3 flex items-start justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-3 flex-wrap min-w-0">
+        <span class="hh-badge ${resultClass}">${resultLabel(entry.result)}</span>
+        <span class="mono text-lg ${resultClass}">${deltaText(delta)}</span>
+      </div>
+      <div class="text-parchment-soft text-sm sm:text-base flex-1 min-w-0 text-right">
+        ${escapeHtml(summary)}
+      </div>
+    </div>
+    ${hasCards ? `
+    <div class="mt-3 flex items-center gap-2 text-gold-bright mono text-xs">
+      <span class="hh-chevron">&rsaquo;</span>
+      <span>View hand</span>
+    </div>` : ''}
+  </summary>
+  ${hasCards ? `
+  <div class="px-4 sm:px-5 pb-5 -mt-1 border-t border-gold-deep/20 pt-4 space-y-4">
+    ${hand && hand.length ? `
+      <div>
+        <p class="stat-label">Your hand</p>
+        <div class="mt-2">${renderCards(hand)}</div>
+      </div>` : ''}
+    ${board && board.length ? `
+      <div>
+        <p class="stat-label">Board</p>
+        <div class="mt-2">${renderCards(board)}</div>
+      </div>` : ''}
+    ${opp && opp.length ? `
+      <div>
+        <p class="stat-label">Opponent</p>
+        <div class="mt-2">${renderCards(opp)}</div>
+      </div>` : ''}
+  </div>` : ''}
+</details>`;
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    const listEl = document.getElementById('history-list');
+    const emptyEl = document.getElementById('history-empty');
+    const countEl = document.getElementById('stat-count');
+    const netEl = document.getElementById('stat-net');
+    const winrateEl = document.getElementById('stat-winrate');
+    const filterRow = document.getElementById('filter-row');
+    const clearBtn = document.getElementById('clear-history');
+
+    let currentFilter = 'all';
+
+    function render() {
+      const all = getAllHistory() || {};
+      const entries = flatten(all, currentFilter);
+
+      // Stats
+      const count = entries.length;
+      let net = 0;
+      let wins = 0;
+      for (const e of entries) {
+        net += Number(e.delta) || 0;
+        const r = normalizeResult(e.result);
+        if (r === 'win') wins++;
+      }
+      countEl.textContent = String(count);
+      netEl.textContent = (net > 0 ? '+' : net < 0 ? '−' : '') + formatChips(Math.abs(net));
+      netEl.classList.remove('win', 'loss', 'text-parchment');
+      netEl.classList.add(net > 0 ? 'win' : net < 0 ? 'loss' : 'text-parchment');
+      winrateEl.textContent = count > 0 ? Math.round((wins / count) * 100) + '%' : '—';
+
+      // List
+      if (count === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+      } else {
+        emptyEl.classList.add('hidden');
+        listEl.innerHTML = entries.map((e, i) => renderRow(e, i)).join('');
+      }
+    }
+
+    // Filter chips
+    filterRow.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-filter]');
+      if (!btn) return;
+      const f = btn.getAttribute('data-filter');
+      if (f === currentFilter) return;
+      currentFilter = f;
+      for (const b of filterRow.querySelectorAll('[data-filter]')) {
+        const on = b === btn;
+        b.classList.toggle('is-active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      }
+      render();
+    });
+
+    // Clear history
+    clearBtn.addEventListener('click', () => {
+      if (!confirm('Clear all hand history? This cannot be undone.')) return;
+      clearAll();
+      render();
+      toast('Hand history cleared.');
+    });
+
+    // Live updates when a game records a new hand (same tab, custom event).
+    window.addEventListener('chipshot:history', () => render());
+    // Cross-tab updates via storage event.
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'chipshot.history.v1') render();
+    });
+    // Re-render on focus (covers navigation back from a game page).
+    window.addEventListener('focus', () => render());
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') render();
+    });
+
+    render();
+  </script>
 </PokerLayout>

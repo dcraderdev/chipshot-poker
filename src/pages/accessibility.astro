@@ -3,7 +3,7 @@ import PokerLayout from '../layouts/PokerLayout.astro';
 ---
 <PokerLayout
   title="Accessibility — ChipShot Poker"
-  description="Accessibility notes for the ChipShot Poker concept site."
+  description="Accessibility notes for the ChipShot Poker concept site and its playable games."
 >
   <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-20">
     <span class="eyebrow">A11y</span>
@@ -11,19 +11,69 @@ import PokerLayout from '../layouts/PokerLayout.astro';
     <div class="gold-rule mt-5 mb-6"></div>
 
     <p class="text-parchment-soft leading-relaxed">
-      ChipShot Poker is a concept demo site. There is no real product behind the pages &mdash; the
-      stats, hands, and dashboards are mock data presented as a portfolio piece.
+      ChipShot Poker is a concept demo with four playable card games &mdash; Texas Hold&rsquo;em,
+      Blackjack, Five Card Draw, and Video Poker. No real money, no accounts, no tracking.
+      The chip stacks are pretend, but the accessibility work is real.
     </p>
 
-    <p class="text-parchment-soft leading-relaxed mt-4">
-      That said, accessibility still counts. The site uses semantic HTML landmarks
-      (header, nav, main, footer), a visible skip link, accessible focus rings in
-      gold, color contrast above 4.5:1 on body text, descriptive labels on all
-      links and navigation, and keyboard navigability throughout. An axe-core
-      audit runs in development on every page load.
+    <h2 class="display text-xl text-parchment mt-10">Keyboard &amp; focus</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      Every game is fully playable from the keyboard. Tab moves through the action
+      buttons (Deal, Hit, Stand, Bet, Draw, etc.) in reading order, and Enter or Space
+      activates the focused control. Focus rings are rendered in gold so they stay
+      visible on the dark felt. A skip link jumps past the header on every page.
     </p>
 
-    <p class="text-parchment-soft leading-relaxed mt-4">
+    <h2 class="display text-xl text-parchment mt-10">Screen readers</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      Game status &mdash; hand results, bankroll changes, dealer actions &mdash; is
+      announced through ARIA live regions (<code class="text-gold-bright">aria-live="polite"</code>)
+      so a screen reader hears "Dealer busts. You win $50." without the user hunting
+      for the update. Cards carry descriptive labels (e.g. "Ace of spades"), and
+      decorative chip art is hidden with <code class="text-gold-bright">aria-hidden</code>.
+    </p>
+
+    <h2 class="display text-xl text-parchment mt-10">Color &amp; contrast</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      The dark felt theme is built around gold <code class="text-gold-bright">#d4af37</code>
+      on felt <code class="text-gold-bright">#082619</code>, which measures roughly
+      <strong>8.5:1</strong> &mdash; comfortably above WCAG AA (4.5:1) and clearing
+      AAA for normal text. Parchment body copy and red/black card pips were tuned
+      to the same standard.
+    </p>
+
+    <h2 class="display text-xl text-parchment mt-10">Motion &amp; sound</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      Card dealing and flip animations (<code class="text-gold-bright">.cs-card--dealt</code>,
+      <code class="text-gold-bright">.cs-card--flip</code>) honor
+      <code class="text-gold-bright">prefers-reduced-motion</code> &mdash; cards
+      appear in place instead of sliding. Chip clinks, riffles, and win stings can
+      be silenced with the mute toggle in the header; the preference is remembered
+      across visits.
+    </p>
+
+    <h2 class="display text-xl text-parchment mt-10">Privacy</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      Bankroll, hand history, and the mute setting live in
+      <code class="text-gold-bright">localStorage</code> only. No analytics, no
+      tracking cookies, no third-party scripts following you between games.
+      Clearing site data resets everything.
+    </p>
+
+    <h2 class="display text-xl text-parchment mt-10">Testing</h2>
+    <div class="gold-rule mt-3 mb-4 opacity-60"></div>
+    <p class="text-parchment-soft leading-relaxed">
+      Every page runs an <a class="text-gold-bright underline" href="https://github.com/dequelabs/axe-core">axe-core</a>
+      audit on load in development mode, and the game pages are spot-checked with
+      VoiceOver on macOS and keyboard-only navigation before each release.
+    </p>
+
+    <p class="text-parchment-soft leading-relaxed mt-10">
       Spot a real-world issue? &mdash;
       <a class="text-gold-bright underline" href="mailto:hello@dcrader.dev">hello@dcrader.dev</a>.
     </p>

@@ -1,0 +1,465 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import {
+  PAYTABLE,
+  PAYTABLE_ORDER,
+  DENOMINATIONS,
+  COIN_OPTIONS,
+} from '../../lib/games/video-poker.js';
+---
+<PokerLayout
+  title="Jacks or Better — Video Poker"
+  description="9/6 Jacks or Better video poker."
+  active="games"
+>
+  <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
+
+    <header class="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="eyebrow">Video Poker</p>
+        <h1 class="display text-4xl sm:text-5xl mt-2 text-parchment">
+          Jacks or <span class="text-gold-bright">Better</span>
+        </h1>
+        <p class="mt-2 text-sm text-parchment-soft">9/6 paytable — full pay. Bet 5 for the Royal Flush bonus.</p>
+      </div>
+      <a href="/games" class="cs-btn">← Lobby</a>
+    </header>
+
+    <!-- ===== PAYTABLE ===== -->
+    <div class="panel-gold overflow-x-auto" aria-label="Paytable">
+      <table class="w-full text-sm mono" id="cs-vp-paytable">
+        <thead>
+          <tr class="text-parchment-dim">
+            <th class="text-left px-3 py-2 stat-label">Hand</th>
+            {COIN_OPTIONS.map((c) => (
+              <th class="text-right px-3 py-2 stat-label" data-coins-col={c}>{c}c</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {PAYTABLE_ORDER.map(([key, label]) => (
+            <tr class="border-t border-gold-deep/30" data-row={key}>
+              <td class="text-left px-3 py-1.5 text-parchment">{label}</td>
+              {COIN_OPTIONS.map((c, i) => (
+                <td class="text-right px-3 py-1.5 numeral" data-cell={`${key}:${c}`}>{PAYTABLE[key][i]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== CARDS ===== -->
+    <div class="mt-6 panel p-4">
+      <div class="flex items-center justify-between mb-3">
+        <p class="stat-label" id="cs-vp-hand-label">Place your bet, then deal</p>
+        <p class="stat-label" id="cs-vp-status" aria-live="polite"></p>
+      </div>
+      <div
+        id="cs-vp-cards"
+        class="flex justify-center gap-2 sm:gap-3 py-3 overflow-x-auto"
+        role="group"
+        aria-label="Your hand. Click a card to hold."
+      ></div>
+      <p class="mt-1 text-center text-xs text-parchment-dim">
+        Tip: after the deal, click a card to mark it <span class="text-gold-bright">HELD</span>.
+      </p>
+    </div>
+
+    <!-- ===== BET CONTROLS ===== -->
+    <div class="mt-6 grid gap-4 sm:grid-cols-2">
+      <div class="panel p-4">
+        <p class="stat-label mb-2">Coins (1–5)</p>
+        <div class="flex flex-wrap gap-2" id="cs-vp-coins" role="radiogroup" aria-label="Coins to bet">
+          {COIN_OPTIONS.map((c) => (
+            <button type="button" class="cs-pill" data-coins={c} role="radio" aria-checked={c === 1 ? 'true' : 'false'}>
+              {c}c
+            </button>
+          ))}
+          <button type="button" class="cs-pill" id="cs-vp-bet-max" title="Bet 5 coins">Max</button>
+        </div>
+
+        <p class="stat-label mt-4 mb-2">Denomination</p>
+        <div class="flex flex-wrap gap-2" id="cs-vp-denoms" role="radiogroup" aria-label="Coin denomination">
+          {DENOMINATIONS.map((d) => (
+            <button type="button" class="cs-pill" data-denom={d} role="radio" aria-checked={d === 1 ? 'true' : 'false'}>
+              ${d}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div class="panel p-4 flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-baseline">
+            <p class="stat-label">Bet</p>
+            <p class="stat-value text-2xl" id="cs-vp-bet">$1</p>
+          </div>
+          <div class="mt-2 flex justify-between items-baseline">
+            <p class="stat-label">Potential top win</p>
+            <p class="stat-value" id="cs-vp-top">$250</p>
+          </div>
+          <div class="mt-2 flex justify-between items-baseline">
+            <p class="stat-label">Bankroll</p>
+            <p class="stat-value" id="cs-vp-bank">$0</p>
+          </div>
+        </div>
+        <p class="mt-3 text-xs text-parchment-dim" id="cs-vp-hint">Pick a denomination, then deal.</p>
+      </div>
+    </div>
+
+    <p class="mt-6 text-xs text-parchment-dim text-center" id="cs-vp-reload-msg" hidden>
+      You're out of chips. <a class="text-gold-bright underline" href="/games">Reload at the lobby</a>.
+    </p>
+
+  </section>
+
+  <!-- ===== STICKY ACTION BAR ===== -->
+  <div class="cs-actionbar">
+    <button type="button" class="cs-btn cs-btn--primary" id="cs-vp-action" disabled>Deal</button>
+    <button type="button" class="cs-btn" id="cs-vp-clear" disabled title="Clear all held cards">Clear Holds</button>
+  </div>
+
+  <script>
+    import { freshShuffled } from '../../lib/deck.js';
+    import { getBalance, adjust, formatChips } from '../../lib/bankroll.js';
+    import { play } from '../../lib/sounds.js';
+    import { record } from '../../lib/history.js';
+    import { evaluate } from '../../lib/poker-eval.js';
+    import { renderCard } from '../../lib/card-svg.js';
+    import { showTutorialOnce } from '../../lib/tutorial.js';
+    import { toast } from '../../lib/toast.js';
+    import {
+      PAYTABLE,
+      PAYTABLE_ORDER,
+      classify,
+      categoryLabel,
+      payoutCoins,
+      payoutChips,
+      betChips,
+      winningCardIndexes,
+    } from '../../lib/games/video-poker.js';
+
+    // ===== State =====
+    const state = {
+      phase: 'idle',       // 'idle' (pre-deal) | 'draw' (post-deal awaiting draw)
+      coins: 1,            // 1..5
+      denom: 1,            // $1 | $5 | $25
+      deck: [],
+      cards: [],           // 5 cards currently shown
+      held: [false, false, false, false, false],
+    };
+
+    // ===== DOM =====
+    const $cards   = document.getElementById('cs-vp-cards');
+    const $action  = document.getElementById('cs-vp-action');
+    const $clear   = document.getElementById('cs-vp-clear');
+    const $bet     = document.getElementById('cs-vp-bet');
+    const $top     = document.getElementById('cs-vp-top');
+    const $bank    = document.getElementById('cs-vp-bank');
+    const $hint    = document.getElementById('cs-vp-hint');
+    const $hand    = document.getElementById('cs-vp-hand-label');
+    const $status  = document.getElementById('cs-vp-status');
+    const $coins   = document.getElementById('cs-vp-coins');
+    const $denoms  = document.getElementById('cs-vp-denoms');
+    const $betMax  = document.getElementById('cs-vp-bet-max');
+    const $reload  = document.getElementById('cs-vp-reload-msg');
+    const $table   = document.getElementById('cs-vp-paytable');
+
+    // ===== Helpers =====
+    function maxAffordableCoins() {
+      const bank = getBalance();
+      // Largest coin count whose bet (coins * denom) fits in bank, 1..5.
+      for (let c = 5; c >= 1; c--) {
+        if (betChips(c, state.denom) <= bank) return c;
+      }
+      return 0;
+    }
+
+    function setCoins(n) {
+      const cap = maxAffordableCoins();
+      const next = Math.max(1, Math.min(5, n));
+      // If we can't afford the requested coins at this denom, snap to max affordable.
+      state.coins = cap > 0 ? Math.min(next, cap) : next;
+      paintBetUI();
+    }
+    function setDenom(d) {
+      state.denom = d;
+      // Re-clamp coins to the new affordability ceiling.
+      const cap = maxAffordableCoins();
+      if (cap > 0 && state.coins > cap) state.coins = cap;
+      paintBetUI();
+    }
+
+    function paintBetUI() {
+      // Coin pills
+      $coins.querySelectorAll('[data-coins]').forEach((el) => {
+        const c = Number(el.dataset.coins);
+        const active = c === state.coins;
+        el.setAttribute('aria-checked', active ? 'true' : 'false');
+        el.style.background = active ? 'var(--color-gold-deep)' : '';
+        el.style.color      = active ? 'var(--color-felt-deep)' : '';
+        el.style.borderColor = active ? 'var(--color-gold-bright)' : '';
+      });
+      // Denom pills
+      $denoms.querySelectorAll('[data-denom]').forEach((el) => {
+        const d = Number(el.dataset.denom);
+        const active = d === state.denom;
+        el.setAttribute('aria-checked', active ? 'true' : 'false');
+        el.style.background = active ? 'var(--color-gold-deep)' : '';
+        el.style.color      = active ? 'var(--color-felt-deep)' : '';
+        el.style.borderColor = active ? 'var(--color-gold-bright)' : '';
+      });
+
+      const bet = betChips(state.coins, state.denom);
+      const top = payoutChips('ROYAL_FLUSH', state.coins, state.denom);
+      $bet.textContent = formatChips(bet);
+      $top.textContent = formatChips(top);
+      $bank.textContent = formatChips(getBalance());
+
+      // Highlight current paytable column
+      $table.querySelectorAll('[data-cell]').forEach((td) => {
+        const c = Number(td.dataset.cell.split(':')[1]);
+        td.style.color = c === state.coins ? 'var(--color-gold-bright)' : '';
+        td.style.fontWeight = c === state.coins ? '700' : '';
+      });
+      $table.querySelectorAll('[data-coins-col]').forEach((th) => {
+        const c = Number(th.dataset.coinsCol);
+        th.style.color = c === state.coins ? 'var(--color-gold-bright)' : '';
+      });
+
+      updateActionAvailability();
+    }
+
+    function updateActionAvailability() {
+      const bank = getBalance();
+      const bet = betChips(state.coins, state.denom);
+      if (state.phase === 'idle') {
+        if (bank < 1) {
+          $action.disabled = true;
+          $action.textContent = 'Deal';
+          $reload.hidden = false;
+          $hint.textContent = "You're out of chips.";
+        } else if (bet > bank) {
+          $action.disabled = true;
+          $action.textContent = 'Deal';
+          $reload.hidden = true;
+          $hint.textContent = `Bet of ${formatChips(bet)} exceeds bankroll.`;
+        } else {
+          $action.disabled = false;
+          $action.textContent = 'Deal';
+          $reload.hidden = true;
+          $hint.textContent = `Bet ${formatChips(bet)} to deal.`;
+        }
+        $clear.disabled = true;
+      } else {
+        // draw phase
+        $action.disabled = false;
+        $action.textContent = 'Draw';
+        $clear.disabled = !state.held.some(Boolean);
+        $reload.hidden = true;
+        $hint.textContent = 'Click cards to hold, then draw.';
+      }
+    }
+
+    // ===== Rendering cards =====
+    function renderSlots({ faceDown = false, stagger = false, flipIdxs = null } = {}) {
+      $cards.innerHTML = '';
+      for (let i = 0; i < 5; i++) {
+        const wrap = document.createElement('button');
+        wrap.type = 'button';
+        wrap.className = 'cs-hand__slot';
+        wrap.style.background = 'transparent';
+        wrap.style.border = '0';
+        wrap.style.padding = '0';
+        wrap.style.cursor = state.phase === 'draw' ? 'pointer' : 'default';
+        wrap.setAttribute('aria-label', `Card slot ${i + 1}`);
+        wrap.dataset.slot = String(i);
+
+        const card = state.cards[i];
+        const isFaceDown = faceDown || !card;
+        wrap.innerHTML = renderCard(card, { faceDown: isFaceDown });
+
+        const inner = wrap.querySelector('.cs-card');
+        if (inner) {
+          if (state.held[i] && state.phase === 'draw') inner.classList.add('cs-card--held');
+          if (stagger && !isFaceDown) {
+            inner.classList.add('cs-card--dealt');
+            inner.style.animationDelay = `${i * 80}ms`;
+          }
+          if (flipIdxs && flipIdxs.includes(i) && !isFaceDown) {
+            inner.classList.add('cs-card--flip');
+            inner.style.animationDelay = `${i * 50}ms`;
+          }
+        }
+
+        // Held badge
+        if (state.phase === 'draw' && state.held[i]) {
+          const badge = document.createElement('span');
+          badge.textContent = 'HELD';
+          badge.style.cssText = `
+            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+            font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.1em;
+            background: var(--color-gold-bright); color: var(--color-felt-deep);
+            padding: 2px 6px; border-radius: 2px; font-weight: 700;
+            pointer-events: none;
+          `;
+          wrap.style.position = 'relative';
+          wrap.appendChild(badge);
+        }
+
+        wrap.addEventListener('click', () => onCardClick(i));
+        $cards.appendChild(wrap);
+      }
+    }
+
+    function highlightWinningCards(idxs) {
+      const slots = $cards.querySelectorAll('[data-slot]');
+      idxs.forEach((i) => {
+        const inner = slots[i]?.querySelector('.cs-card');
+        if (inner) inner.classList.add('cs-card--win');
+      });
+    }
+
+    function onCardClick(i) {
+      if (state.phase !== 'draw') return;
+      state.held[i] = !state.held[i];
+      play('click');
+      renderSlots();
+      updateActionAvailability();
+    }
+
+    // ===== Game actions =====
+    function doDeal() {
+      const bet = betChips(state.coins, state.denom);
+      const bank = getBalance();
+      if (bet > bank || bank < 1) return;
+
+      // Deduct bet up front.
+      adjust(-bet);
+      play('deal');
+      play('chip');
+
+      state.deck = freshShuffled();
+      state.cards = state.deck.splice(0, 5);
+      state.held = [false, false, false, false, false];
+      state.phase = 'draw';
+      $hand.textContent = 'Hold the keepers, then draw';
+      $status.textContent = '';
+      renderSlots({ stagger: true });
+      updateActionAvailability();
+      $bank.textContent = formatChips(getBalance());
+    }
+
+    function doDraw() {
+      // Replace non-held cards.
+      const flipIdxs = [];
+      for (let i = 0; i < 5; i++) {
+        if (!state.held[i]) {
+          state.cards[i] = state.deck.shift();
+          flipIdxs.push(i);
+        }
+      }
+      play('flip');
+      renderSlots({ flipIdxs });
+
+      // Evaluate.
+      const ev = evaluate(state.cards);
+      const category = classify(ev.name, state.cards);
+      const payout = payoutChips(category, state.coins, state.denom);
+      const bet = betChips(state.coins, state.denom);
+      const delta = payout - bet;
+
+      // Pay out (returns 0 for losing hands; payout already includes the bet's value).
+      if (payout > 0) adjust(+payout);
+
+      const handName = category ? categoryLabel(category) : ev.name;
+      $hand.textContent = handName + (payout > 0 ? ` — ${formatChips(payout)}` : '');
+      if (delta > 0)      $status.textContent = `+${formatChips(delta)}`;
+      else if (delta < 0) $status.textContent = `-${formatChips(-delta)}`;
+      else                $status.textContent = 'Push';
+      $status.style.color = delta > 0 ? 'var(--color-win)' : (delta < 0 ? 'var(--color-loss)' : 'var(--color-parchment-soft)');
+
+      if (category) {
+        const winIdxs = winningCardIndexes(category, state.cards);
+        highlightWinningCards(winIdxs);
+        toast(`${handName} — ${formatChips(payout)}`, { kind: 'win' });
+        play('win');
+      } else {
+        play('lose');
+      }
+
+      // History entry.
+      record('video-poker', {
+        result: payout > 0 ? 'win' : 'loss',
+        delta,
+        hand: state.cards.map((c) => c.id),
+        handName,
+        summary: payout > 0
+          ? `${handName} for ${formatChips(payout)}`
+          : `${handName} — no pay`,
+      });
+
+      // Reset to idle for next round.
+      state.phase = 'idle';
+      $bank.textContent = formatChips(getBalance());
+      // Auto-clamp coins if bankroll dropped below current bet.
+      const cap = maxAffordableCoins();
+      if (cap > 0 && state.coins > cap) state.coins = cap;
+      paintBetUI();
+    }
+
+    // ===== Wiring =====
+    $action.addEventListener('click', () => {
+      if (state.phase === 'idle') doDeal();
+      else doDraw();
+    });
+
+    $clear.addEventListener('click', () => {
+      if (state.phase !== 'draw') return;
+      state.held = [false, false, false, false, false];
+      play('click');
+      renderSlots();
+      updateActionAvailability();
+    });
+
+    $coins.querySelectorAll('[data-coins]').forEach((el) => {
+      el.addEventListener('click', () => {
+        if (state.phase !== 'idle') return; // lock during a hand
+        play('chip');
+        setCoins(Number(el.dataset.coins));
+      });
+    });
+    $betMax.addEventListener('click', () => {
+      if (state.phase !== 'idle') return;
+      play('chip');
+      setCoins(5);
+    });
+    $denoms.querySelectorAll('[data-denom]').forEach((el) => {
+      el.addEventListener('click', () => {
+        if (state.phase !== 'idle') return;
+        play('chip');
+        setDenom(Number(el.dataset.denom));
+      });
+    });
+
+    // Keep bankroll display in sync if it changes elsewhere.
+    window.addEventListener('chipshot:bankroll', () => {
+      $bank.textContent = formatChips(getBalance());
+      if (state.phase === 'idle') updateActionAvailability();
+    });
+
+    // ===== Init =====
+    renderSlots({ faceDown: true });
+    paintBetUI();
+
+    showTutorialOnce('video-poker', [
+      { title: 'Pick your bet',
+        body: 'Choose 1–5 coins and a $1, $5, or $25 denomination. Betting 5 coins unlocks the Royal Flush bonus (4000-for-1).' },
+      { title: 'Hold the keepers',
+        body: 'Click any card after the deal to mark it HELD. Held cards stay; the rest get replaced on the draw.' },
+      { title: 'Draw to win',
+        body: 'Press Draw to swap unheld cards. Jacks-or-better pays — anything lower is a loss. Good luck.' },
+    ]);
+  </script>
+</PokerLayout>

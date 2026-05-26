@@ -1,0 +1,536 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="Texas Hold'em — ChipShot Poker"
+  description="Play single-table no-limit Texas Hold'em vs three bots. $5/$10 blinds, 1,000 chip starting stack."
+  active="games"
+>
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <a href="/games" class="mono text-xs text-parchment-soft hover:text-gold-bright">&larr; Lobby</a>
+    <h1 class="display text-3xl mt-2 text-parchment">No-Limit Hold'em</h1>
+    <p class="text-sm text-parchment-soft mt-1">$5/$10 blinds &middot; 1,000 chip starting stack &middot; you vs three bots</p>
+
+    <!-- Hand header strip -->
+    <div class="mt-4 flex flex-wrap items-center gap-3 text-xs mono text-parchment-soft">
+      <span id="hand-num" class="cs-pill">Hand —</span>
+      <span id="street-pill" class="cs-pill">Press Deal</span>
+      <span id="pot-pill" class="cs-pill"><span class="text-parchment-soft">Pot</span> <span class="text-gold-bright numeral ml-1" id="pot-val">$0</span></span>
+      <span id="dealer-pill" class="cs-pill"><span class="text-parchment-soft">Button</span> <span class="text-gold-bright ml-1" id="dealer-val">—</span></span>
+    </div>
+
+    <!-- Table area -->
+    <div class="cs-table mt-4" id="table" style="min-height: 360px;">
+      <!-- Bots row (top) -->
+      <div class="cs-table__bots flex justify-around items-start flex-wrap gap-3" id="bots-row">
+        <div class="cs-seat" data-seat="1" id="seat-1"></div>
+        <div class="cs-seat" data-seat="2" id="seat-2"></div>
+        <div class="cs-seat" data-seat="3" id="seat-3"></div>
+      </div>
+
+      <!-- Community -->
+      <div class="cs-community flex flex-col items-center mt-6 gap-2" id="community">
+        <p class="eyebrow text-parchment-soft">Community</p>
+        <div class="cs-board flex items-end gap-2 min-h-[100px]" id="board"></div>
+        <div class="mt-1 mono text-xs text-parchment-soft">
+          <span>Pot</span>
+          <span class="text-gold-bright numeral ml-1" id="pot-center">$0</span>
+        </div>
+      </div>
+
+      <!-- Hero seat (bottom) -->
+      <div class="cs-table__hero flex justify-center mt-6" id="hero-row">
+        <div class="cs-seat" data-seat="0" id="seat-0"></div>
+      </div>
+    </div>
+
+    <!-- Status / hand result panel -->
+    <div id="status" class="mt-4 panel p-4 text-sm text-parchment-soft min-h-[60px]" aria-live="polite">
+      <p class="mono text-xs text-parchment-soft">Press <span class="text-gold-bright">Deal</span> to start a hand.</p>
+    </div>
+
+    <!-- Recent log -->
+    <details class="mt-3 panel p-3 text-xs text-parchment-soft">
+      <summary class="cursor-pointer mono text-parchment-soft">Action log</summary>
+      <ol id="log-list" class="mt-2 space-y-1 mono text-[11px] text-parchment-soft max-h-48 overflow-auto"></ol>
+    </details>
+  </section>
+
+  <!-- Sticky action bar -->
+  <div class="cs-actionbar" id="actions"></div>
+
+  <style>
+    /* Local touch-ups for hold'em layout. */
+    .cs-board .cs-card {
+      transform: translateY(0);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+    .cs-seat__hole {
+      display: flex;
+      gap: 4px;
+      margin-top: 4px;
+      min-height: 64px;
+    }
+    .cs-seat__last {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-parchment-soft);
+      min-height: 1em;
+    }
+    .cs-seat__hand-name {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--color-gold-bright);
+      min-height: 1em;
+    }
+    .cs-seat--button::after {
+      content: 'D';
+      position: absolute;
+      bottom: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--color-parchment);
+      color: var(--color-felt-deep);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--color-gold);
+    }
+    .cs-seat { position: relative; }
+    .cs-raise-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      width: 100%;
+    }
+    .cs-raise-input {
+      background: rgba(6,24,18,0.95);
+      border: 1px solid var(--color-gold-deep);
+      color: var(--color-parchment);
+      font-family: var(--font-mono);
+      padding: 6px 8px;
+      border-radius: 4px;
+      width: 92px;
+      text-align: right;
+    }
+    /* Make hero hole cards a little larger so they're readable on mobile */
+    #seat-0 .cs-seat__hole .cs-card { width: 56px; height: 80px; }
+    /* Compress on tight mobile */
+    @media (max-width: 420px) {
+      #bots-row { gap: 8px; }
+      .cs-seat { min-width: 86px; padding: 4px 6px; }
+      .cs-seat__hole .cs-card { width: 36px; height: 52px; }
+      #seat-0 .cs-seat__hole .cs-card { width: 48px; height: 70px; }
+      .cs-board .cs-card { width: 40px; height: 58px; }
+    }
+  </style>
+
+  <script>
+    import { createGame, SMALL_BLIND, BIG_BLIND } from '../../lib/games/holdem.js';
+    import { getBalance, adjust, formatChips, resetBankroll, STARTING_BANKROLL } from '../../lib/bankroll.js';
+    import { play } from '../../lib/sounds.js';
+    import { record } from '../../lib/history.js';
+    import { renderCard } from '../../lib/card-svg.js';
+    import { showTutorialOnce } from '../../lib/tutorial.js';
+    import { toast } from '../../lib/toast.js';
+
+    // -- one-time tutorial --
+    showTutorialOnce('holdem', [
+      { title: 'Welcome to the felt', body: "You're seat 1 vs three bots. Blinds are $5/$10. Each player starts with 1,000 chips." },
+      { title: 'How a hand goes', body: 'Preflop → flop → turn → river. You can fold, check, call, or raise on each street. Best 5 of 7 cards wins the pot.' },
+      { title: 'Bankroll', body: 'Your nav bankroll moves only when chips are won or lost from your stack at the end of a hand. Press Deal to start.' },
+    ]);
+
+    const game = createGame();
+    let isProcessing = false;       // guard against double-clicks during bot turns
+    let preHandHeroStack = 0;       // to compute delta for bankroll + history
+
+    const $ = (id) => document.getElementById(id);
+    const seats = [0, 1, 2, 3].map((i) => $(`seat-${i}`));
+    const boardEl = $('board');
+    const potVal = $('pot-val');
+    const potCenter = $('pot-center');
+    const streetPill = $('street-pill');
+    const handNum = $('hand-num');
+    const dealerVal = $('dealer-val');
+    const status = $('status');
+    const actions = $('actions');
+    const logList = $('log-list');
+
+    // ---------- rendering ----------
+
+    function renderSeat(seat, p) {
+      const winnerIds = game.state.lastResult?.winners ?? [];
+      const isWinner = winnerIds.includes(p.id);
+      const isToAct = game.state.toAct === p.id && game.state.street !== 'showdown' && game.state.street !== 'idle';
+      const isButton = game.state.button === p.id && game.state.street !== 'idle';
+      const classes = ['cs-seat'];
+      if (isToAct) classes.push('cs-seat--active');
+      if (p.folded) classes.push('cs-seat--folded');
+      if (isButton) classes.push('cs-seat--button');
+      seat.className = classes.join(' ');
+
+      const reveal = p.isHero || game.state.street === 'showdown' || (game.state.lastResult && game.state.lastResult.method === 'showdown');
+      const showAtAll = p.hole && p.hole.length > 0 && (!p.folded || p.isHero);
+      const winBest = isWinner && game.state.lastResult?.hands?.[p.id]?.best;
+      const winIds = new Set((winBest || []).map((c) => c.id));
+
+      const holeHtml = showAtAll
+        ? p.hole.map((c) => {
+            const html = renderCard(c, { faceDown: !reveal, small: true });
+            if (reveal && winIds.has(c.id)) return html.replace('cs-card cs-card--face', 'cs-card cs-card--face cs-card--win');
+            return html;
+          }).join('')
+        : '<div class="cs-card cs-card--back" style="width:44px;height:64px;opacity:0.4"></div><div class="cs-card cs-card--back" style="width:44px;height:64px;opacity:0.4"></div>';
+
+      const betLine = p.bet > 0
+        ? `<span class="cs-seat__bet">${formatChips(p.bet)}</span>`
+        : '<span class="cs-seat__last">' + (p.lastAction ? p.lastAction.toUpperCase() : '') + '</span>';
+
+      const handName = game.state.street === 'showdown' && game.state.lastResult?.hands?.[p.id]
+        ? game.state.lastResult.hands[p.id].descr
+        : '';
+
+      seat.innerHTML = `
+        <span class="cs-seat__name">${escapeHtml(p.name)}${p.isHero ? ' · You' : ''}</span>
+        <span class="cs-seat__stack">${formatChips(p.stack)}${p.allIn ? ' · ALL-IN' : ''}</span>
+        <div class="cs-seat__hole">${holeHtml}</div>
+        ${betLine}
+        <span class="cs-seat__hand-name">${escapeHtml(handName)}</span>
+      `;
+    }
+
+    function renderBoard() {
+      const board = game.state.board;
+      // five slots
+      const winBestIds = new Set();
+      if (game.state.lastResult?.hands) {
+        for (const id of game.state.lastResult.winners) {
+          const best = game.state.lastResult.hands[id]?.best;
+          if (best) best.forEach((c) => winBestIds.add(c.id));
+        }
+      }
+      const html = [0, 1, 2, 3, 4].map((i) => {
+        const c = board[i];
+        if (!c) {
+          return `<div class="cs-card cs-card--back" style="width:56px;height:80px;opacity:0.18"></div>`;
+        }
+        let s = renderCard(c);
+        if (winBestIds.has(c.id)) s = s.replace('cs-card cs-card--face', 'cs-card cs-card--face cs-card--win');
+        return s;
+      }).join('');
+      boardEl.innerHTML = html;
+    }
+
+    function renderTopStrip() {
+      const s = game.state;
+      handNum.textContent = `Hand ${s.handNumber || '—'}`;
+      streetPill.textContent = labelForStreet(s.street);
+      potVal.textContent = formatChips(s.pot);
+      potCenter.textContent = formatChips(s.pot);
+      dealerVal.textContent = s.street === 'idle' ? '—' : (s.players[s.button]?.name ?? '—');
+    }
+
+    function labelForStreet(s) {
+      if (s === 'idle') return 'Waiting';
+      if (s === 'preflop') return 'Preflop';
+      if (s === 'flop') return 'Flop';
+      if (s === 'turn') return 'Turn';
+      if (s === 'river') return 'River';
+      if (s === 'showdown') return 'Showdown';
+      return s;
+    }
+
+    function renderLog() {
+      logList.innerHTML = game.state.log.slice().reverse().map((m) => `<li>· ${escapeHtml(m)}</li>`).join('');
+    }
+
+    function renderAll() {
+      for (let i = 0; i < 4; i++) renderSeat(seats[i], game.state.players[i]);
+      renderBoard();
+      renderTopStrip();
+      renderLog();
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // ---------- action bar ----------
+
+    function renderActions() {
+      const s = game.state;
+      // Idle / between hands
+      if (s.street === 'idle' || s.street === 'showdown') {
+        const bal = getBalance();
+        const dealLabel = s.street === 'showdown' ? 'Deal next hand' : 'Deal';
+        const reloadBtn = bal < 20
+          ? `<button class="cs-btn cs-btn--danger" id="btn-reload" type="button">Reload bankroll</button>`
+          : '';
+        actions.innerHTML = `
+          <button class="cs-btn cs-btn--primary" id="btn-deal" type="button">${dealLabel}</button>
+          ${reloadBtn}
+        `;
+        $('btn-deal').addEventListener('click', () => {
+          if (getBalance() < BIG_BLIND) {
+            toast('Not enough chips to play. Reload your bankroll.', { kind: 'lose' });
+            return;
+          }
+          play('click');
+          dealHand();
+        });
+        if ($('btn-reload')) $('btn-reload').addEventListener('click', () => {
+          resetBankroll();
+          toast(`Bankroll reset to ${formatChips(STARTING_BANKROLL)}.`);
+          renderActions();
+        });
+        return;
+      }
+
+      // Bot to act
+      if (s.toAct !== 0) {
+        actions.innerHTML = `
+          <span class="mono text-xs text-parchment-soft">Waiting on ${escapeHtml(s.players[s.toAct].name)}…</span>
+        `;
+        return;
+      }
+
+      // Hero to act
+      const legal = game.legalActions(0);
+      const callLabel = legal.toCall === 0 ? 'Check' : (legal.toCall >= s.players[0].stack ? `Call ${formatChips(s.players[0].stack)} (All-in)` : `Call ${formatChips(legal.callAmt)}`);
+      const callBtn = legal.canCheck
+        ? `<button class="cs-btn" id="btn-check" type="button">Check</button>`
+        : `<button class="cs-btn" id="btn-call" type="button">${callLabel}</button>`;
+      const raiseLabel = s.currentBet === 0 ? 'Bet' : 'Raise';
+      const minTo = legal.minRaiseTo;
+      const maxTo = legal.maxRaiseTo;
+      const defVal = Math.min(maxTo, Math.max(minTo, Math.round(s.pot * 0.7) || minTo));
+      const raiseBlock = legal.canRaise
+        ? `<div class="cs-raise-row">
+             <button class="cs-pill" data-frac="0.5" type="button">½ pot</button>
+             <button class="cs-pill" data-frac="0.75" type="button">¾ pot</button>
+             <button class="cs-pill" data-frac="1" type="button">Pot</button>
+             <button class="cs-pill" data-allin="1" type="button">All-in</button>
+             <input class="cs-raise-input" id="raise-amt" type="number" min="${minTo}" max="${maxTo}" step="1" value="${defVal}" inputmode="numeric" aria-label="Raise to amount" />
+             <button class="cs-btn cs-btn--primary" id="btn-raise" type="button">${raiseLabel}</button>
+           </div>`
+        : '';
+      actions.innerHTML = `
+        <button class="cs-btn cs-btn--danger" id="btn-fold" type="button">Fold</button>
+        ${callBtn}
+        ${raiseBlock}
+      `;
+
+      $('btn-fold')?.addEventListener('click', () => heroAction('fold'));
+      $('btn-check')?.addEventListener('click', () => heroAction('check'));
+      $('btn-call')?.addEventListener('click', () => heroAction('call'));
+      $('btn-raise')?.addEventListener('click', () => {
+        const amt = parseInt($('raise-amt').value, 10);
+        heroAction('raise', amt);
+      });
+      actions.querySelectorAll('.cs-pill').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const input = $('raise-amt');
+          if (!input) return;
+          if (btn.dataset.allin) {
+            input.value = maxTo;
+          } else {
+            const frac = parseFloat(btn.dataset.frac);
+            const target = s.currentBet + Math.max(BIG_BLIND, Math.round(s.pot * frac));
+            input.value = Math.max(minTo, Math.min(maxTo, target));
+          }
+        });
+      });
+    }
+
+    // ---------- flow control ----------
+
+    function heroAction(kind, raiseAmt) {
+      if (isProcessing) return;
+      if (game.state.toAct !== 0) return;
+      isProcessing = true;
+      try {
+        if (kind === 'fold') { play('click'); game.fold(0); }
+        else if (kind === 'check') { play('click'); game.check(0); }
+        else if (kind === 'call') { play('chip'); game.call(0); }
+        else if (kind === 'raise') {
+          if (!Number.isFinite(raiseAmt)) raiseAmt = game.legalActions(0).minRaiseTo;
+          play('chip');
+          game.raise(raiseAmt, 0);
+        }
+      } finally {
+        renderAll();
+        afterAction();
+      }
+    }
+
+    function afterAction() {
+      // animate sounds for street advance
+      maybeAnnounceStreet();
+      renderActions();
+
+      if (game.state.street === 'showdown') {
+        finishHand();
+        isProcessing = false;
+        return;
+      }
+
+      if (game.state.toAct === 0) {
+        isProcessing = false;
+        return;
+      }
+      // bot turn(s)
+      isProcessing = true;
+      scheduleBotTurn();
+    }
+
+    let lastStreet = 'idle';
+    function maybeAnnounceStreet() {
+      if (game.state.street !== lastStreet) {
+        if (['flop', 'turn', 'river'].includes(game.state.street)) {
+          play('deal');
+        }
+        lastStreet = game.state.street;
+      }
+    }
+
+    function scheduleBotTurn() {
+      const delay = 650 + Math.floor(Math.random() * 400);
+      setTimeout(() => {
+        if (game.state.street === 'showdown' || game.state.street === 'idle') {
+          isProcessing = false;
+          renderAll();
+          renderActions();
+          return;
+        }
+        if (game.state.toAct === 0) {
+          isProcessing = false;
+          renderAll();
+          renderActions();
+          return;
+        }
+        const idx = game.state.toAct;
+        const decision = game.botDecide(idx);
+        if (decision.type === 'fold') { play('click'); game.fold(idx); }
+        else if (decision.type === 'check') { play('click'); game.check(idx); }
+        else if (decision.type === 'call') { play('chip'); game.call(idx); }
+        else if (decision.type === 'raise') { play('chip'); game.raise(decision.amount, idx); }
+        renderAll();
+        maybeAnnounceStreet();
+        renderActions();
+
+        if (game.state.street === 'showdown') {
+          finishHand();
+          isProcessing = false;
+          return;
+        }
+        if (game.state.toAct === 0) {
+          isProcessing = false;
+          return;
+        }
+        scheduleBotTurn();
+      }, delay);
+    }
+
+    function dealHand() {
+      preHandHeroStack = game.state.players[0].stack;
+      // If the hero is sitting out (busted previously and bankroll empty), bail.
+      if (game.state.players[0].sittingOut) {
+        toast('You are sitting out. Reload bankroll to continue.', { kind: 'lose' });
+        return;
+      }
+      // Pre-charge any deficit to bankroll if hero's stack got low between hands?
+      // Stack is persisted only within session; bankroll <-> hand delta is settled at finishHand.
+      game.startHand();
+      lastStreet = 'preflop';
+      play('deal');
+      renderAll();
+      renderActions();
+      status.innerHTML = `<p class="mono text-xs text-parchment-soft">Hand ${game.state.handNumber} dealt. Action on <span class="text-gold-bright">${escapeHtml(game.state.players[game.state.toAct].name)}</span>.</p>`;
+      isProcessing = false;
+      // If the very first action belongs to a bot, run it.
+      if (game.state.toAct !== 0) {
+        isProcessing = true;
+        scheduleBotTurn();
+      }
+    }
+
+    function finishHand() {
+      const heroStackAfter = game.state.players[0].stack;
+      const delta = heroStackAfter - preHandHeroStack;
+
+      // Apply delta to bankroll (and to nav badge).
+      if (delta !== 0) adjust(delta);
+
+      const r = game.state.lastResult;
+      let result, summary;
+      if (r) {
+        const heroWon = r.winners.includes(0);
+        if (heroWon && r.winners.length === 1) {
+          result = 'win';
+          summary = r.method === 'showdown'
+            ? `You win ${formatChips(r.pot)} at showdown with ${r.hands?.[0]?.descr ?? 'best hand'}.`
+            : `You win ${formatChips(r.pot)} — everyone folded.`;
+          play('win');
+        } else if (heroWon && r.winners.length > 1) {
+          result = 'push';
+          summary = `Split pot — you take ${formatChips(r.amounts[0] ?? 0)}.`;
+          play('push');
+        } else {
+          result = 'loss';
+          const winnerNames = r.winners.map((i) => game.state.players[i].name).join(', ');
+          summary = r.method === 'showdown'
+            ? `${winnerNames} win${r.winners.length > 1 ? '' : 's'} ${formatChips(r.pot)} with ${r.hands?.[r.winners[0]]?.descr ?? 'best hand'}.`
+            : `${winnerNames} win${r.winners.length > 1 ? '' : 's'} ${formatChips(r.pot)} — you folded or were folded around to.`;
+          play('lose');
+        }
+      } else {
+        result = delta > 0 ? 'win' : (delta < 0 ? 'loss' : 'push');
+        summary = 'Hand ended.';
+      }
+
+      const banner = result === 'win'
+        ? `<p class="display text-xl text-gold-bright">${summary}</p>`
+        : result === 'push'
+          ? `<p class="display text-xl text-parchment">${summary}</p>`
+          : `<p class="display text-xl text-parchment-soft">${summary}</p>`;
+
+      const deltaLine = delta === 0
+        ? `<p class="mono text-xs text-parchment-soft mt-1">No change to bankroll.</p>`
+        : `<p class="mono text-xs mt-1 ${delta > 0 ? 'text-gold-bright' : 'text-parchment-soft'}">${delta > 0 ? '+' : ''}${formatChips(delta)} this hand · bankroll ${formatChips(getBalance())}</p>`;
+
+      status.innerHTML = banner + deltaLine;
+
+      // Record to history
+      try {
+        record('holdem', {
+          result,
+          delta,
+          summary,
+          hand: game.state.players[0].hole.map((c) => c.id),
+          board: game.state.board.map((c) => c.id),
+          pot: r?.pot ?? 0,
+          handNumber: game.state.handNumber,
+        });
+      } catch (_) {}
+
+      renderAll();
+      renderActions();
+    }
+
+    // ---------- init ----------
+
+    // Initial paint (idle table).
+    renderAll();
+    renderActions();
+  </script>
+</PokerLayout>

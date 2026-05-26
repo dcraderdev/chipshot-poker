@@ -1,193 +1,97 @@
 ---
 import PokerLayout from '../layouts/PokerLayout.astro';
 
-const steps = [
+const games = [
   {
-    n: 1,
-    title: 'Capture the hand',
-    copy: 'Punch in stakes, position, hole cards, and the board as it runs out. The whole input is one keyboard-driven form — never break flow at the table.',
-    visualType: 'capture',
+    eyebrow: 'No-Limit Hold’em',
+    name: 'Texas Hold’em',
+    rules:
+      'Each player gets two hole cards. Five community cards come out across the flop, turn, and river. Best five-card poker hand wins the pot. We deal $5/$10 blinds vs three bots.',
+    terms: ['hole cards', 'community board', 'blinds', 'pot', 'showdown'],
+    href: '/games/holdem',
+    cta: 'Play Hold’em',
   },
   {
-    n: 2,
-    title: 'Tag the situation',
-    copy: '3-bet pot. Single-raised. Multi-way. Capped-range river. Tagged hands cluster in your history so you can study mistakes by class, not by date.',
-    visualType: 'tags',
+    eyebrow: 'House Game',
+    name: 'Blackjack',
+    rules:
+      'Get closer to 21 than the dealer without busting. Aces count 1 or 11; face cards count 10. Hit, stand, double, or split. Blackjack pays 3:2; dealer hits soft 17.',
+    terms: ['hit', 'stand', 'double', 'split', 'soft 17'],
+    href: '/games/blackjack',
+    cta: 'Play Blackjack',
   },
   {
-    n: 3,
-    title: 'Assign your read',
-    copy: 'Was villain a station? A reg? A spew-button? Pick from your library or jot a quick note. Reads attach to player profiles automatically.',
-    visualType: 'read',
+    eyebrow: 'Classic Draw',
+    name: 'Five-Card Draw',
+    rules:
+      'Each player antes, gets five cards, and may discard any number for replacements. One round of betting, then showdown. Pure poker — no community cards.',
+    terms: ['ante', 'draw', 'discard', 'betting round', 'showdown'],
+    href: '/games/five-card-draw',
+    cta: 'Play Five-Card Draw',
   },
   {
-    n: 4,
-    title: 'Run the equity',
-    copy: 'A built-in equity calculator runs your hand against ranges you draw on the board. Save the equity result with the hand so future-you remembers the math.',
-    visualType: 'equity',
-  },
-  {
-    n: 5,
-    title: 'Save to journal',
-    copy: 'Hand lands in the journal, stats update live, and your bankroll line ticks. Tomorrow morning the studied-hands queue picks the spots worth reviewing.',
-    visualType: 'save',
+    eyebrow: '9/6 Jacks or Better',
+    name: 'Video Poker',
+    rules:
+      'Bet 1–5 coins, get five cards, hold any number, draw replacements. Hands of a pair of jacks or better pay. Royal Flush at max bet pays 4,000.',
+    terms: ['coins', 'hold', 'draw', 'paytable', 'royal flush'],
+    href: '/games/video-poker',
+    cta: 'Play Video Poker',
   },
 ];
 ---
 <PokerLayout
-  title="Review walkthrough — ChipShot Poker"
-  description="Five-step demo of how to review a poker hand inside ChipShot — capture, tag, read, equity, save."
+  title="How to Play — ChipShot Poker"
+  description="Quick rules for Texas Hold’em, Blackjack, Five-Card Draw, and Video Poker."
   active="play"
 >
   <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
-    <span class="eyebrow">Workflow</span>
-    <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Review a hand in five steps</h1>
+    <span class="eyebrow">Rules</span>
+    <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">How to Play</h1>
     <p class="text-parchment-soft text-sm mt-2 max-w-2xl">
-      Most trackers ask too much. ChipShot asks for the minimum: cards, action, read.
-      Everything else &mdash; equity, tagging logic, position roll-ups &mdash; happens behind the felt.
+      Quick rundown for each of the four games on the floor.
     </p>
     <div class="gold-rule mt-6"></div>
   </section>
 
-  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-8 pb-10">
-    {steps.map((s) => (
-      <article class="panel p-5 sm:p-7 grid sm:grid-cols-[100px_1fr] gap-5 sm:gap-7 items-start">
-        <div class="flex sm:flex-col items-center sm:items-start gap-3 sm:gap-2">
-          <div class="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center bg-felt-deep/80">
-            <span class="numeral text-3xl text-gold-bright">{s.n}</span>
-          </div>
-          <span class="stat-label">Step {s.n} / 5</span>
-        </div>
+  <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="sm:grid sm:grid-cols-2 sm:gap-6 space-y-6 sm:space-y-0">
+      {games.map((g) => (
+        <article class="panel p-5 sm:p-6 flex flex-col">
+          <span class="eyebrow">{g.eyebrow}</span>
+          <h2 class="display text-2xl text-parchment mt-2">{g.name}</h2>
 
-        <div>
-          <h2 class="display text-2xl text-parchment">{s.title}</h2>
-          <p class="text-parchment-soft text-sm mt-2 max-w-xl leading-relaxed">{s.copy}</p>
+          <p class="text-parchment-soft text-sm mt-3 leading-relaxed">
+            {g.rules}
+          </p>
 
           <div class="mt-5">
-            {s.visualType === 'capture' && (
-              <div class="panel-gold p-4 max-w-lg">
-                <div class="grid grid-cols-3 gap-3">
-                  <div>
-                    <p class="stat-label">Stakes</p>
-                    <p class="mono text-parchment mt-1">$1 / $2</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">Position</p>
-                    <p class="mono text-gold-bright mt-1">BTN</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">Pot type</p>
-                    <p class="mono text-parchment mt-1">3-bet</p>
-                  </div>
-                </div>
-                <div class="mt-4">
-                  <p class="stat-label">Hole</p>
-                  <div class="flex gap-2 mt-2">
-                    <span class="card lg black">A&#9824;</span>
-                    <span class="card lg red">K&#9829;</span>
-                  </div>
-                </div>
-                <div class="mt-3 flex items-center gap-2">
-                  <span class="chip"></span>
-                  <span class="mono text-xs text-parchment-dim">stack 200 bb</span>
-                </div>
-              </div>
-            )}
-
-            {s.visualType === 'tags' && (
-              <div class="flex flex-wrap gap-2 max-w-lg">
-                {['3-bet pot', 'Heads-up', 'Capped range', 'Thin value', 'Polar river', 'Vs reg', 'Vs station'].map((t) => (
-                  <span class="mono text-xs px-3 py-1.5 border border-gold-deep/50 rounded-sm text-parchment-soft">{t}</span>
-                ))}
-                <span class="mono text-xs px-3 py-1.5 border border-gold rounded-sm bg-felt-deep text-gold-bright">+ Add tag</span>
-              </div>
-            )}
-
-            {s.visualType === 'read' && (
-              <div class="panel-gold p-4 max-w-lg">
-                <div class="flex items-center justify-between">
-                  <p class="mono text-parchment">Villain &mdash; Seat 4</p>
-                  <span class="mono text-xs text-parchment-dim">220 hands sample</span>
-                </div>
-                <div class="mt-2 grid grid-cols-4 gap-2 text-center">
-                  <div>
-                    <p class="stat-label">VPIP</p>
-                    <p class="mono text-gold-bright">38</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">PFR</p>
-                    <p class="mono text-gold-bright">12</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">3B</p>
-                    <p class="mono text-gold-bright">3.1</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">WTSD</p>
-                    <p class="mono text-gold-bright">36</p>
-                  </div>
-                </div>
-                <p class="mt-3 text-sm text-parchment-soft italic border-l-2 border-gold pl-3">
-                  &ldquo;Loose-passive. Rarely raises without two-pair plus. River raise = nuts.&rdquo;
-                </p>
-              </div>
-            )}
-
-            {s.visualType === 'equity' && (
-              <div class="panel-gold p-4 max-w-lg">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <p class="stat-label">Hero</p>
-                    <div class="flex gap-1 mt-1">
-                      <span class="card black">A&#9824;</span>
-                      <span class="card red">K&#9829;</span>
-                    </div>
-                    <p class="mono text-2xl win mt-3">62.4%</p>
-                  </div>
-                  <div>
-                    <p class="stat-label">Villain range</p>
-                    <p class="mono text-xs text-parchment-soft mt-1">JJ+, AQ+, KQs</p>
-                    <p class="mono text-2xl loss mt-3">37.6%</p>
-                  </div>
-                </div>
-                <div class="mt-4 h-2 bg-felt-deep rounded-sm overflow-hidden border border-gold-deep/30">
-                  <div class="h-full" style="width: 62.4%; background: linear-gradient(90deg, #4ade80, #d4af37);"></div>
-                </div>
-              </div>
-            )}
-
-            {s.visualType === 'save' && (
-              <div class="panel-gold p-4 max-w-lg">
-                <div class="flex items-center justify-between">
-                  <span class="mono text-xs text-parchment-dim">H-2241 saved</span>
-                  <span class="mono text-xs win">+$184</span>
-                </div>
-                <ul class="mt-3 space-y-2 text-sm">
-                  <li class="flex justify-between text-parchment-soft">
-                    <span>Journal updated</span><span class="mono text-gold">14,228</span>
-                  </li>
-                  <li class="flex justify-between text-parchment-soft">
-                    <span>Stats refreshed</span><span class="mono text-gold">bb/100 +8.4</span>
-                  </li>
-                  <li class="flex justify-between text-parchment-soft">
-                    <span>Queued to review</span><span class="mono text-gold">tomorrow 8am</span>
-                  </li>
-                </ul>
-              </div>
-            )}
+            <p class="stat-label">Key terms</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+              {g.terms.map((t) => (
+                <span class="mono text-xs px-2.5 py-1 border border-gold-deep/50 rounded-sm text-parchment-soft">
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
-      </article>
-    ))}
+
+          <div class="gold-rule mt-6"></div>
+
+          <div class="mt-5 flex">
+            <a href={g.href} class="btn-gold">{g.cta} &rarr;</a>
+          </div>
+        </article>
+      ))}
+    </div>
   </section>
 
   <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 text-center">
     <div class="gold-rule mb-6"></div>
-    <p class="display text-2xl text-parchment">That&apos;s the loop.</p>
-    <p class="text-parchment-soft text-sm mt-2">One hand, one minute, every read remembered.</p>
+    <p class="display text-2xl text-parchment">Ready to sit down?</p>
+    <p class="text-parchment-soft text-sm mt-2">Pick a table from the lobby — chips are on the house.</p>
     <div class="mt-5 flex justify-center gap-3 flex-wrap">
-      <a href="/hands" class="btn-gold">Back to hand history</a>
-      <a href="/stats" class="btn-ghost">See the dashboard</a>
+      <a href="/games" class="btn-gold">Open the lobby &rarr;</a>
     </div>
   </section>
 </PokerLayout>

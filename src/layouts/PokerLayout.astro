@@ -4,16 +4,16 @@ import '../styles/global.css';
 export interface Props {
   title: string;
   description: string;
-  active?: 'home' | 'hands' | 'stats' | 'play';
+  active?: 'home' | 'hands' | 'stats' | 'play' | 'games';
 }
 
 const { title, description, active } = Astro.props;
 
 const nav = [
   { href: '/', label: 'Home', key: 'home' },
+  { href: '/games', label: 'Play', key: 'games' },
   { href: '/hands', label: 'Hands', key: 'hands' },
   { href: '/stats', label: 'Stats', key: 'stats' },
-  { href: '/play', label: 'Play', key: 'play' },
 ];
 ---
 <!doctype html>
@@ -59,7 +59,7 @@ const nav = [
     </a>
 
     <header class="border-b border-gold-deep/40" style="background: rgba(6, 32, 24, 0.85); backdrop-filter: blur(6px);">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-3">
         <a href="/" class="flex items-center gap-3 group" aria-label="ChipShot Poker home">
           <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
             <circle cx="14" cy="14" r="12" fill="#0d3b2e" stroke="#d4af37" stroke-width="1.5"/>
@@ -70,21 +70,33 @@ const nav = [
             ChipShot<span class="text-gold-bright"> Poker</span>
           </span>
         </a>
-        <nav aria-label="Primary">
-          <ul class="flex items-center gap-0 sm:gap-1">
-            {nav.map((n) => (
-              <li>
-                <a
-                  href={n.href}
-                  class={`mono text-xs sm:text-sm px-2.5 sm:px-3.5 py-2 rounded-sm transition-colors ${active === n.key ? 'text-gold-bright bg-felt-deep/80 border border-gold-deep/60' : 'text-parchment-soft hover:text-gold-bright'}`}
-                  aria-current={active === n.key ? 'page' : undefined}
-                >
-                  {n.label.toUpperCase()}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a
+            href="/games"
+            class="cs-bankroll"
+            id="cs-bankroll-badge"
+            aria-label="Bankroll — tap to play"
+            title="Bankroll"
+          >
+            <span class="cs-bankroll__icon" aria-hidden="true"></span>
+            <span id="cs-bankroll-amount">$1,000</span>
+          </a>
+          <nav aria-label="Primary">
+            <ul class="flex items-center gap-0 sm:gap-1">
+              {nav.map((n) => (
+                <li>
+                  <a
+                    href={n.href}
+                    class={`mono text-xs sm:text-sm px-2.5 sm:px-3.5 py-2 rounded-sm transition-colors ${active === n.key ? 'text-gold-bright bg-felt-deep/80 border border-gold-deep/60' : 'text-parchment-soft hover:text-gold-bright'}`}
+                    aria-current={active === n.key ? 'page' : undefined}
+                  >
+                    {n.label.toUpperCase()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
     </header>
 
@@ -99,26 +111,25 @@ const nav = [
             ChipShot<span class="text-gold-bright"> Poker</span>
           </p>
           <p class="mt-2 text-sm text-parchment-soft max-w-xs">
-            Track every chip, every hand, every read. A concept site for a Texas Hold&apos;em journal and stat tracker.
+            Track every chip, every hand, every read. Play four casino classics in your browser.
           </p>
         </div>
         <div>
-          <p class="stat-label">Sections</p>
+          <p class="stat-label">Games</p>
           <ul class="mt-3 space-y-1.5 text-sm">
-            <li><a class="text-parchment-soft hover:text-gold-bright" href="/">Home</a></li>
-            <li><a class="text-parchment-soft hover:text-gold-bright" href="/hands">Hand history</a></li>
-            <li><a class="text-parchment-soft hover:text-gold-bright" href="/stats">Stats dashboard</a></li>
-            <li><a class="text-parchment-soft hover:text-gold-bright" href="/play">Review walkthrough</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/games">Lobby</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/games/holdem">Texas Hold'em</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/games/blackjack">Blackjack</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/games/five-card-draw">Five-Card Draw</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/games/video-poker">Video Poker</a></li>
           </ul>
         </div>
         <div>
           <p class="stat-label">Site</p>
           <ul class="mt-3 space-y-1.5 text-sm">
-            <li>
-              <a class="text-parchment-soft hover:text-gold-bright" href="/accessibility">
-                Accessibility
-              </a>
-            </li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/hands">Hand history</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/stats">Stats dashboard</a></li>
+            <li><a class="text-parchment-soft hover:text-gold-bright" href="/accessibility">Accessibility</a></li>
             <li class="text-parchment-dim text-xs pt-2">
               &copy; {new Date().getFullYear()} ChipShot Poker. Built by{' '}
               <a class="text-parchment-soft hover:text-gold-bright" href="https://dcrader.dev" rel="noopener">
@@ -129,6 +140,21 @@ const nav = [
         </div>
       </div>
     </footer>
+
+    <!-- Bankroll badge live updater -->
+    <script>
+      import { onChange, formatChips } from '../lib/bankroll.js';
+      const el = document.getElementById('cs-bankroll-amount');
+      if (el) {
+        onChange((bal) => { el.textContent = formatChips(bal); });
+      }
+    </script>
+
+    <!-- Onboarding (first visit) -->
+    <script>
+      import { mountOnboarding } from '../lib/onboarding.js';
+      mountOnboarding();
+    </script>
 
     <script>
       if (import.meta.env.DEV) {

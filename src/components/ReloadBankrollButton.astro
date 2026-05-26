@@ -1,0 +1,56 @@
+---
+// Reusable "Reload bankroll" helper. Drop anywhere on a game page; the script
+// below wires up every instance (data-cs-reload-bankroll). On click, confirms,
+// resets the bankroll to the starting amount, plays a chip sound, and fires a
+// `chipshot:reload` window event so game pages can reset their own state.
+interface Props {
+  variant?: 'inline' | 'block';
+  label?: string;
+}
+
+const { variant = 'inline', label = 'Reload bankroll' } = Astro.props;
+
+const classes = variant === 'block'
+  ? 'cs-btn cs-btn--primary w-full justify-center'
+  : 'cs-btn cs-btn--primary';
+---
+<button
+  type="button"
+  class={classes}
+  data-cs-reload-bankroll
+  data-cs-variant={variant}
+>
+  {label}
+</button>
+
+<script>
+  import { resetBankroll, formatChips, STARTING_BANKROLL } from '../lib/bankroll.js';
+  import { play } from '../lib/sounds.js';
+
+  function wire() {
+    const buttons = document.querySelectorAll('[data-cs-reload-bankroll]');
+    buttons.forEach((btn) => {
+      if ((btn as HTMLElement).dataset.csReloadWired === '1') return;
+      (btn as HTMLElement).dataset.csReloadWired = '1';
+      btn.addEventListener('click', () => {
+        const msg = `Reset your bankroll to ${formatChips(STARTING_BANKROLL)}?`;
+        if (!window.confirm(msg)) return;
+        const next = resetBankroll();
+        try { play('chip'); } catch (_) {}
+        try {
+          window.dispatchEvent(new CustomEvent('chipshot:reload', {
+            detail: { balance: next }
+          }));
+        } catch (_) {}
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire, { once: true });
+  } else {
+    wire();
+  }
+  // Re-wire on Astro view transitions, if used.
+  document.addEventListener('astro:page-load', wire);
+</script>

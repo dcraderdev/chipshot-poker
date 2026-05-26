@@ -1,38 +1,145 @@
 ---
 import PokerLayout from '../layouts/PokerLayout.astro';
+
+// Four "cards" whose ranks spell BUST. Suits rotate through the deck so
+// the colors alternate (black, red, black, red) the way a real fan would.
+const cards = [
+  { letter: 'B', suit: '♠', color: '#1a1a1a', rotate: -10, x: -120, y: 14 }, // spade
+  { letter: 'U', suit: '♥', color: '#b00020', rotate: -3,  x: -40,  y: 0  }, // heart
+  { letter: 'S', suit: '♣', color: '#1a1a1a', rotate: 4,   x: 40,   y: 0  }, // club
+  { letter: 'T', suit: '♦', color: '#b00020', rotate: 12,  x: 120,  y: 14 }, // diamond
+];
 ---
 <PokerLayout
-  title="404 — Page off the felt | ChipShot Poker"
-  description="That page folded. Head back to the table at ChipShot Poker — a Texas Hold'em hand history journal and live stat tracker."
+  title="404 — Off the felt"
+  description="That page folded. Here's where to go next."
 >
-  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
-    <span class="eyebrow">Dead hand &middot; Mucked</span>
+  <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+    <span class="eyebrow">404 &middot; Off the felt</span>
 
-    <h1
-      class="display mt-6 leading-none tracking-tight text-gold-bright"
-      style="font-size: clamp(6rem, 22vw, 13rem); font-weight: 800;"
-    >
-      404
+    <h1 class="display mt-6 text-5xl sm:text-6xl text-parchment leading-tight">
+      That hand busted.
     </h1>
 
-    <div class="gold-rule mx-auto my-8 max-w-xs"></div>
-
-    <h2 class="display text-3xl sm:text-4xl text-parchment">
-      Page not found.
-    </h2>
-
-    <p class="mt-5 text-parchment-soft text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-      Looks like that URL got mucked before the flop. The card you were chasing
-      isn&apos;t in the deck &mdash; but the table is still live.
+    <p class="mt-5 text-parchment-soft text-lg max-w-xl mx-auto leading-relaxed">
+      The page you tried to reach is shuffled out of the deck.
+      Pull up a fresh seat below.
     </p>
 
-    <p class="mt-3 mono text-xs sm:text-sm text-parchment-dim">
-      // shuffle up and deal &mdash; let&apos;s find you a better seat.
+    <div class="gold-rule mx-auto my-10 max-w-xs"></div>
+
+    {/* Fanned hand spelling B-U-S-T */}
+    <div class="cs-bust-fan" aria-hidden="true">
+      {cards.map((c) => (
+        <svg
+          class="cs-bust-card"
+          width="96"
+          height="140"
+          viewBox="0 0 80 120"
+          style={`--cs-rot:${c.rotate}deg;--cs-x:${c.x * 0.42}px;--cs-y:${c.y}px;color:${c.color};`}
+          xmlns="http://www.w3.org/2000/svg"
+          role="img"
+        >
+          {/* Card body */}
+          <rect
+            x="1.25"
+            y="1.25"
+            width="77.5"
+            height="117.5"
+            rx="7"
+            ry="7"
+            fill="#faf3df"
+            stroke="#a3851f"
+            stroke-width="1.25"
+          />
+          {/* Inner gold hairline */}
+          <rect
+            x="3.75"
+            y="3.75"
+            width="72.5"
+            height="112.5"
+            rx="5"
+            ry="5"
+            fill="none"
+            stroke="rgba(212, 175, 55, 0.35)"
+            stroke-width="0.5"
+          />
+          {/* Top-left corner: rank + suit */}
+          <g fill="currentColor" font-family="'Playfair Display', Georgia, serif" font-weight="700">
+            <text x="7" y="16" font-size="14">{c.letter}</text>
+            <text x="7.5" y="28" font-size="11">{c.suit}</text>
+          </g>
+          {/* Center pip */}
+          <text
+            x="40"
+            y="72"
+            text-anchor="middle"
+            fill="currentColor"
+            font-family="'Playfair Display', Georgia, serif"
+            font-size="38"
+            font-weight="700"
+          >{c.suit}</text>
+          {/* Bottom-right corner (rotated 180) */}
+          <g
+            fill="currentColor"
+            font-family="'Playfair Display', Georgia, serif"
+            font-weight="700"
+            transform="rotate(180 40 60)"
+          >
+            <text x="7" y="16" font-size="14">{c.letter}</text>
+            <text x="7.5" y="28" font-size="11">{c.suit}</text>
+          </g>
+        </svg>
+      ))}
+    </div>
+
+    <p class="mt-8 mono text-xs sm:text-sm text-parchment-dim">
+      // dealer mucked the URL &mdash; let&apos;s find you a better seat.
     </p>
 
     <div class="mt-10 flex flex-wrap gap-3 justify-center">
       <a href="/" class="btn-gold">Back to home</a>
-      <a href="/hands" class="btn-ghost">Browse hand history</a>
+      <a href="/games" class="btn-ghost">Game lobby</a>
+      <a href="/games/holdem" class="btn-ghost">Deal a hand</a>
     </div>
+
+    <p class="mt-10 text-parchment-dim text-sm">
+      Looking for something specific? Try the
+      <a href="/games" class="text-gold-bright hover:underline">lobby</a>
+      or
+      <a href="/hands" class="text-gold-bright hover:underline">your hands</a>.
+    </p>
   </section>
+
+  <style>
+    .cs-bust-fan {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 0;
+      margin: 0 auto;
+      min-height: 170px;
+      perspective: 800px;
+    }
+    .cs-bust-card {
+      transform: translate(var(--cs-x), var(--cs-y)) rotate(var(--cs-rot));
+      transform-origin: 50% 90%;
+      margin: 0 -18px;
+      filter:
+        drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45))
+        drop-shadow(0 1px 0 rgba(0, 0, 0, 0.4));
+      transition: transform 0.35s cubic-bezier(.2, .6, .3, 1.1);
+    }
+    .cs-bust-card:hover {
+      transform:
+        translate(var(--cs-x), calc(var(--cs-y) - 10px))
+        rotate(var(--cs-rot));
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cs-bust-card { transition: none; }
+    }
+    @media (max-width: 480px) {
+      .cs-bust-card { margin: 0 -22px; }
+    }
+  </style>
 </PokerLayout>
