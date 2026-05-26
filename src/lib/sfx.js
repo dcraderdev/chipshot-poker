@@ -215,6 +215,103 @@ export function playClick() {
   stopAfter(osc, c, 0.025);
 }
 
+// Poker action cues -----------------------------------------------------------
+
+export function playFold() {
+  // Low descending: G3 -> D3 sine, soft.
+  const c = ready(); if (!c) return;
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(196, c.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(146.83, c.currentTime + 0.18);
+  const g = envGain(c, 0.25, 0.005, 0.22);
+  osc.connect(g).connect(masterGain);
+  osc.start();
+  stopAfter(osc, c, 0.24);
+}
+
+export function playCheck() {
+  // Soft knock: short low triangle tap.
+  const c = ready(); if (!c) return;
+  const osc = c.createOscillator();
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(180, c.currentTime);
+  const g = envGain(c, 0.22, 0.002, 0.06);
+  osc.connect(g).connect(masterGain);
+  osc.start();
+  stopAfter(osc, c, 0.08);
+}
+
+export function playCall() {
+  // Single mid tone: A4 sine pluck.
+  const c = ready(); if (!c) return;
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(440, c.currentTime);
+  const g = envGain(c, 0.3, 0.003, 0.14);
+  osc.connect(g).connect(masterGain);
+  osc.start();
+  stopAfter(osc, c, 0.16);
+}
+
+export function playRaise() {
+  // Rising: E4 -> A4 -> C#5 stepped sine arpeggio (short).
+  const c = ready(); if (!c) return;
+  const notes = [329.63, 440.0, 554.37];
+  const step = 0.055;
+  notes.forEach((freq, i) => {
+    const osc = c.createOscillator();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, c.currentTime + i * step);
+    const g = c.createGain();
+    const t = c.currentTime + i * step;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.3, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.13);
+    osc.connect(g).connect(masterGain);
+    osc.start(t);
+    osc.stop(t + 0.15);
+  });
+}
+
+export function playAllIn() {
+  // Dramatic: low C3 + C4 with rising harmonic and a tiny noise crash.
+  const c = ready(); if (!c) return;
+  const fundamental = [130.81, 261.63];
+  fundamental.forEach((freq) => {
+    const osc = c.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, c.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freq * 1.5, c.currentTime + 0.35);
+    const g = envGain(c, 0.22, 0.01, 0.45);
+    osc.connect(g).connect(masterGain);
+    osc.start();
+    stopAfter(osc, c, 0.5);
+  });
+  // Crash transient
+  const noise = c.createBufferSource();
+  noise.buffer = makeNoiseBuffer(c, 0.18);
+  const hp = c.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 1200;
+  const ng = envGain(c, 0.22, 0.005, 0.16);
+  noise.connect(hp).connect(ng).connect(masterGain);
+  noise.start();
+}
+
+export function playPotBump() {
+  // Very quick percussive chip stack settle.
+  const c = ready(); if (!c) return;
+  const osc = c.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(680, c.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(420, c.currentTime + 0.07);
+  const g = envGain(c, 0.16, 0.002, 0.07);
+  osc.connect(g).connect(masterGain);
+  osc.start();
+  stopAfter(osc, c, 0.09);
+}
+
 export function playShuffle() {
   const c = ready(); if (!c) return;
   // Riffling: ~400ms low-passed noise with LFO-modulated filter cutoff.

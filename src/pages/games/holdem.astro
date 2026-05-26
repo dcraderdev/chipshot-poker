@@ -26,6 +26,8 @@ import Tutorial from '../../components/Tutorial.astro';
         <div class="flex justify-around items-start gap-2 mb-6">
           <!-- Bot West -->
           <div class="player-seat" data-seat="1">
+            <div class="action-badge" data-seat-action aria-live="polite"></div>
+            <div class="turn-pointer" data-turn-pointer aria-hidden="true">&#9660;</div>
             <div class="player-name">Bot West</div>
             <div class="player-stack" data-seat-stack>$1000</div>
             <div class="flex gap-1" data-seat-cards></div>
@@ -33,6 +35,8 @@ import Tutorial from '../../components/Tutorial.astro';
           </div>
           <!-- Bot North -->
           <div class="player-seat" data-seat="2">
+            <div class="action-badge" data-seat-action aria-live="polite"></div>
+            <div class="turn-pointer" data-turn-pointer aria-hidden="true">&#9660;</div>
             <div class="player-name">Bot North</div>
             <div class="player-stack" data-seat-stack>$1000</div>
             <div class="flex gap-1" data-seat-cards></div>
@@ -40,6 +44,8 @@ import Tutorial from '../../components/Tutorial.astro';
           </div>
           <!-- Bot East -->
           <div class="player-seat" data-seat="3">
+            <div class="action-badge" data-seat-action aria-live="polite"></div>
+            <div class="turn-pointer" data-turn-pointer aria-hidden="true">&#9660;</div>
             <div class="player-name">Bot East</div>
             <div class="player-stack" data-seat-stack>$1000</div>
             <div class="flex gap-1" data-seat-cards></div>
@@ -53,6 +59,8 @@ import Tutorial from '../../components/Tutorial.astro';
         <!-- Hero -->
         <div class="flex justify-center mt-6">
           <div class="player-seat" data-seat="0" style="min-width:200px">
+            <div class="action-badge" data-seat-action aria-live="polite"></div>
+            <div class="turn-pointer" data-turn-pointer aria-hidden="true">&#9660;</div>
             <div class="player-name">You</div>
             <div class="player-stack" data-seat-stack>$1000</div>
             <div class="flex gap-2 my-1" id="hold-hero-cards"></div>
@@ -62,8 +70,8 @@ import Tutorial from '../../components/Tutorial.astro';
       </div>
 
       <aside class="flex flex-col gap-2">
-        <p class="stat-label">Log</p>
-        <div class="game-log" id="hold-log" aria-live="polite"></div>
+        <p class="stat-label">Action log</p>
+        <div class="action-log" id="hold-log" aria-live="polite"></div>
       </aside>
     </div>
 
