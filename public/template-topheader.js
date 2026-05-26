@@ -68,6 +68,7 @@
       + 'html.dt-th-hidden{--dt-th-h:0px;}'
       + 'html.dt-th-mounted{scroll-padding-top:var(--dt-th-h);}'
       + 'html.dt-th-mounted [data-dt-shifted]{top:var(--dt-th-h)!important;transition:top .18s ease-out;}'
+      + 'html.dt-th-mounted body[data-dt-body-shifted]{padding-top:var(--dt-th-h)!important;transition:padding-top .18s ease-out;}'
       + '@media (max-width:520px){html{--dt-th-h:32px;}#dcrader-th .dt-inner{height:32px;padding:0 10px;gap:8px;}#dcrader-th nav{gap:10px;}#dcrader-th nav a:not(.dt-pri){display:none;}#dcrader-th .dt-menu{max-height:70vh;}}'
       ;
     var style = document.createElement('style');
@@ -106,24 +107,51 @@
     document.body.insertBefore(bar, document.body.firstChild);
     document.documentElement.classList.add('dt-th-mounted');
 
+    // Keep --dt-th-h in sync with the bar's true rendered height (incl. border)
+    // so body padding/scroll-padding don't leave a 1px gap.
+    function syncBarHeight(){
+      var h = bar.offsetHeight;
+      if (h) document.documentElement.style.setProperty('--dt-th-h', h + 'px');
+    }
+    syncBarHeight();
+    window.addEventListener('resize', syncBarHeight);
+
     function shiftHostNavs(){
       var els = document.body.querySelectorAll('*');
       var vw = window.innerWidth;
+      var shiftedAny = false;
       for (var i = 0; i < els.length; i++) {
         var el = els[i];
         if (el === bar || bar.contains(el)) continue;
         if (el.hasAttribute('data-dt-shifted')) continue;
         var cs = getComputedStyle(el);
-        if ((cs.position !== 'fixed' && cs.position !== 'sticky') || parseFloat(cs.top) > 2) continue;
+        if ((cs.position !== 'fixed' && cs.position !== 'sticky') || parseFloat(cs.top) > 8) continue;
         var r = el.getBoundingClientRect();
         // Only target wide elements: top navs, full-screen drawers/overlays.
         // Skips small floating UI like custom cursors, back-to-top pills, chat widgets.
-        if (r.width < vw * 0.5) continue;
+        if (r.width < vw * 0.4) continue;
         el.setAttribute('data-dt-shifted','');
+        shiftedAny = true;
+      }
+      // Fallback: if no fixed/sticky header was shifted, push the whole body
+      // down so the page's static/in-flow header isn't clipped by our bar.
+      if (!document.body.hasAttribute('data-dt-body-shifted')) {
+        var hasShifted = shiftedAny || document.querySelector('[data-dt-shifted]');
+        if (!hasShifted) {
+          document.body.setAttribute('data-dt-body-shifted','');
+        }
       }
     }
     shiftHostNavs();
     window.addEventListener('resize', shiftHostNavs);
+    // Re-sweep after late hydration (React/SPA) renders headers post-load.
+    try {
+      var mo = new MutationObserver(function(){ shiftHostNavs(); });
+      mo.observe(document.body, { childList: true, subtree: true });
+      setTimeout(function(){ try { mo.disconnect(); } catch(_){} }, 4000);
+    } catch(_) {}
+    setTimeout(shiftHostNavs, 250);
+    setTimeout(shiftHostNavs, 1000);
 
     var btn = bar.querySelector('.dt-dd button');
     var menu = bar.querySelector('.dt-menu');
