@@ -1,0 +1,79 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import Tutorial from '../../components/Tutorial.astro';
+import '../../styles/cards.css';
+import '../../styles/games.css';
+---
+<PokerLayout
+  title="Five-Card Draw — ChipShot Poker"
+  description="Beat the bot. Discard up to 3, draw fresh, best hand wins."
+  active="games"
+>
+  <section class="max-w-3xl mx-auto px-4 py-8 fixed-bottom-pad">
+    <header class="mb-6">
+      <span class="eyebrow">Heads-up &middot; vs Bot</span>
+      <h1 class="display text-3xl sm:text-4xl text-parchment mt-2">Five-Card Draw</h1>
+      <p class="text-parchment-soft text-sm mt-2 max-w-xl leading-relaxed">
+        Ante is $10. Discard up to three cards, draw fresh, then bet against the bot. Best five-card poker hand wins the pot.
+      </p>
+    </header>
+
+    <div class="felt-table">
+      <!-- Bot seat -->
+      <div class="flex justify-center mb-4">
+        <div class="player-seat" data-seat-bot>
+          <span class="player-name">BOT</span>
+          <span class="player-stack" data-bot-bank>$1,000</span>
+        </div>
+      </div>
+
+      <div class="flex justify-center gap-2 mb-6" data-bot-cards aria-label="Bot cards"></div>
+
+      <div class="flex justify-center mb-6">
+        <span class="felt-pot" aria-label="Pot">
+          <span class="chip-dot" aria-hidden="true"></span>
+          POT <span data-pot>$0</span>
+        </span>
+      </div>
+
+      <div class="flex justify-center gap-2 mb-4" data-hero-cards aria-label="Your cards"></div>
+
+      <div class="flex justify-center">
+        <div class="player-seat" data-seat-hero>
+          <span class="player-name">YOU</span>
+          <span class="player-stack" data-hero-bank>$1,000</span>
+        </div>
+      </div>
+    </div>
+
+    <p
+      class="mt-4 text-sm text-parchment-soft text-center"
+      data-low-chips
+      hidden
+    >
+      Not enough chips to ante. <a class="text-gold-bright hover:underline" href="/settings">Reset your bankroll</a> in Settings.
+    </p>
+
+    <div class="game-action-bar sticky-mobile mt-6" data-action-bar role="group" aria-label="Game actions"></div>
+
+    <div class="mt-6">
+      <p class="stat-label mb-2">Hand log</p>
+      <div class="game-log" data-game-log aria-live="polite"></div>
+    </div>
+  </section>
+
+  <Tutorial game="draw" steps={[
+    { title: "Goal", body: "Make the best 5-card poker hand. Beat the bot to win the pot." },
+    { title: "Draw", body: "After the deal, click cards to mark them for discard, then press Draw to redraw up to 3 cards." },
+    { title: "Showdown", body: "Best hand wins the pot. Standard poker rankings — pair, two pair, trips, straight, flush, full house, quads, straight flush." }
+  ]} />
+
+  <script>
+    import { init } from '../../lib/games/draw.js';
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</PokerLayout>

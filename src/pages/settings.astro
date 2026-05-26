@@ -1,0 +1,364 @@
+---
+import PokerLayout from '../layouts/PokerLayout.astro';
+---
+<PokerLayout
+  title="Settings — ChipShot Poker"
+  description="Manage your demo chip bankroll, profile, tutorials, and history."
+  active="games"
+>
+  <section class="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <header class="mb-8">
+      <span class="eyebrow">Account</span>
+      <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Settings</h1>
+      <p class="text-parchment-soft text-sm mt-2 max-w-xl">
+        Tweak your demo identity, reset the chip stack, replay tutorials, or burn it all down and start over.
+      </p>
+      <div class="gold-rule mt-6"></div>
+    </header>
+
+    <!-- PROFILE -->
+    <article class="panel p-6 sm:p-7 mb-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <span class="eyebrow">Profile</span>
+          <h2 class="display text-xl text-gold-bright mt-2">Player name</h2>
+        </div>
+        <span class="stat-label">Display only</span>
+      </div>
+      <div class="gold-rule my-5"></div>
+
+      <label for="username-input" class="stat-label block">Username</label>
+      <div class="mt-2 flex flex-wrap gap-2">
+        <input
+          id="username-input"
+          type="text"
+          maxlength="24"
+          placeholder="dcrader"
+          class="flex-1 min-w-[180px] bg-felt-deep/60 border border-gold-deep/40 px-3 py-2 mono text-sm text-parchment rounded-sm focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/40"
+        />
+        <button id="profile-save" type="button" class="btn-gold">Save</button>
+      </div>
+      <p id="profile-toast" class="mt-2 mono text-xs text-gold-bright opacity-0 transition-opacity duration-300" aria-live="polite"></p>
+    </article>
+
+    <!-- BANKROLL -->
+    <article class="panel p-6 sm:p-7 mb-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <span class="eyebrow">Bankroll</span>
+          <h2 class="display text-xl text-gold-bright mt-2">Chip stack</h2>
+        </div>
+        <span class="stat-label">Demo chips</span>
+      </div>
+      <div class="gold-rule my-5"></div>
+
+      <div class="text-center mb-5">
+        <p class="stat-label">Current balance</p>
+        <p id="balance-value" class="display text-4xl sm:text-5xl text-parchment mt-1 numeral">$1,000</p>
+      </div>
+
+      <dl class="grid grid-cols-3 gap-px panel overflow-hidden">
+        <div class="p-3 sm:p-4 text-center">
+          <dt class="stat-label">Won</dt>
+          <dd id="lifetime-won" class="stat-value text-lg mt-1 win numeral">$0</dd>
+        </div>
+        <div class="p-3 sm:p-4 text-center border-l border-gold-deep/30">
+          <dt class="stat-label">Lost</dt>
+          <dd id="lifetime-lost" class="stat-value text-lg mt-1 loss numeral">$0</dd>
+        </div>
+        <div class="p-3 sm:p-4 text-center border-l border-gold-deep/30">
+          <dt class="stat-label">Net</dt>
+          <dd id="lifetime-net" class="stat-value text-lg mt-1 numeral">$0</dd>
+        </div>
+      </dl>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button id="bankroll-topup" type="button" class="btn-ghost">Top up to $1,000</button>
+        <button id="bankroll-reset" type="button" class="btn-gold">Reset to $1,000</button>
+      </div>
+      <p id="bankroll-toast" class="mt-2 mono text-xs text-gold-bright opacity-0 transition-opacity duration-300" aria-live="polite"></p>
+    </article>
+
+    <!-- TUTORIALS -->
+    <article class="panel p-6 sm:p-7 mb-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <span class="eyebrow">Tutorials</span>
+          <h2 class="display text-xl text-gold-bright mt-2">How-to-play overlays</h2>
+        </div>
+        <span class="stat-label">Per game</span>
+      </div>
+      <div class="gold-rule my-5"></div>
+
+      <p class="stat-label">Currently dismissed</p>
+      <ul id="tutorials-list" class="mt-2 flex flex-wrap gap-2 mono text-xs">
+        <li class="text-parchment-dim">—</li>
+      </ul>
+
+      <div class="mt-5">
+        <button id="tutorials-reset" type="button" class="btn-gold">Replay tutorials</button>
+      </div>
+      <p id="tutorials-toast" class="mt-2 mono text-xs text-gold-bright opacity-0 transition-opacity duration-300" aria-live="polite"></p>
+    </article>
+
+    <!-- HISTORY -->
+    <article class="panel p-6 sm:p-7 mb-6">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <span class="eyebrow">Hand history</span>
+          <h2 class="display text-xl text-gold-bright mt-2">Saved hands</h2>
+        </div>
+        <span class="stat-label">Per game</span>
+      </div>
+      <div class="gold-rule my-5"></div>
+
+      <ul id="history-list" class="divide-y divide-gold-deep/20">
+        <li class="py-3 flex items-center justify-between text-parchment-dim">
+          <span class="mono text-sm">—</span>
+          <span class="mono text-xs">0 hands</span>
+        </li>
+      </ul>
+
+      <div class="mt-5">
+        <button id="history-clear-all" type="button" class="btn-gold">Clear all history</button>
+      </div>
+      <p id="history-toast" class="mt-2 mono text-xs text-gold-bright opacity-0 transition-opacity duration-300" aria-live="polite"></p>
+    </article>
+
+    <!-- DANGER ZONE -->
+    <article class="p-6 sm:p-7 mb-6 border border-loss/60 bg-loss/5 rounded-sm" style="border-color: var(--color-loss); background: rgba(180, 50, 50, 0.06);">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <span class="eyebrow" style="color: var(--color-loss);">Danger zone</span>
+          <h2 class="display text-xl mt-2" style="color: var(--color-loss);">Wipe everything</h2>
+        </div>
+      </div>
+      <div class="my-5" style="border-top: 1px solid var(--color-loss); opacity: 0.4;"></div>
+
+      <p class="text-parchment-soft text-sm">
+        Erases your profile, chip bankroll, hand history across every game, and tutorial progress. You will be sent back to onboarding.
+      </p>
+      <div class="mt-5">
+        <button id="wipe-everything" type="button" class="px-4 py-2 mono text-sm uppercase tracking-widest rounded-sm border transition-colors" style="border-color: var(--color-loss); color: var(--color-loss);">
+          Wipe everything
+        </button>
+      </div>
+      <p id="wipe-toast" class="mt-2 mono text-xs opacity-0 transition-opacity duration-300" style="color: var(--color-loss);" aria-live="polite"></p>
+    </article>
+  </section>
+
+  <script>
+    import {
+      getProfile, setProfile,
+      getBalance, getLifetime, resetBankroll, setBalance,
+      STARTING_BANKROLL,
+    } from '../lib/bankroll.js';
+    import { resetTutorials } from '../lib/tutorial.js';
+    import { clearHistory, getHistory } from '../lib/history.js';
+
+    const GAMES: Array<{ key: string; label: string }> = [
+      { key: 'holdem', label: "Texas Hold'em" },
+      { key: 'blackjack', label: 'Blackjack' },
+      { key: 'draw', label: 'Five-Card Draw' },
+      { key: 'videopoker', label: 'Video Poker' },
+    ];
+
+    const TUTORIAL_KEY = 'chipshot.tutorial.v1';
+    const PROFILE_KEY = 'chipshot.profile.v1';
+    const BANKROLL_KEY = 'chipshot.bankroll.v1';
+    const HISTORY_KEY = 'chipshot.history.v1';
+
+    const fmtMoney = (n: number) => {
+      const sign = n < 0 ? '-' : '';
+      const v = Math.abs(Math.round(n * 100) / 100);
+      return sign + '$' + v.toLocaleString('en-US', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+    };
+
+    const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T | null;
+
+    function showToast(id: string, msg: string) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = msg;
+      el.style.opacity = '1';
+      window.setTimeout(() => { el.style.opacity = '0'; }, 2000);
+    }
+
+    function renderProfile() {
+      const input = $<HTMLInputElement>('username-input');
+      if (!input) return;
+      const p = getProfile();
+      if (p.username && !input.value) input.value = p.username;
+      else if (p.username) input.value = p.username;
+    }
+
+    function renderBankroll() {
+      const balance = getBalance();
+      const lt = getLifetime();
+      const net = (lt.won || 0) - (lt.lost || 0);
+      const bal = $('balance-value');
+      const won = $('lifetime-won');
+      const lost = $('lifetime-lost');
+      const netEl = $('lifetime-net');
+      if (bal) bal.textContent = fmtMoney(balance);
+      if (won) won.textContent = fmtMoney(lt.won || 0);
+      if (lost) lost.textContent = fmtMoney(lt.lost || 0);
+      if (netEl) {
+        netEl.textContent = (net >= 0 ? '+' : '') + fmtMoney(net).replace(/^-/, '');
+        netEl.classList.remove('win', 'loss');
+        netEl.classList.add(net >= 0 ? 'win' : 'loss');
+      }
+    }
+
+    function renderTutorials() {
+      const list = $('tutorials-list');
+      if (!list) return;
+      let dismissed: Record<string, boolean> = {};
+      try { dismissed = JSON.parse(localStorage.getItem(TUTORIAL_KEY) || '{}'); } catch {}
+      const seen = GAMES.filter(g => dismissed[g.key]);
+      list.innerHTML = '';
+      if (seen.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'text-parchment-dim';
+        li.textContent = 'None — all tutorials will play on next visit.';
+        list.appendChild(li);
+        return;
+      }
+      for (const g of seen) {
+        const li = document.createElement('li');
+        li.className = 'px-2 py-1 border border-gold-deep/40 text-parchment-soft rounded-sm';
+        li.textContent = g.label;
+        list.appendChild(li);
+      }
+    }
+
+    function renderHistory() {
+      const list = $('history-list');
+      if (!list) return;
+      list.innerHTML = '';
+      const totals = GAMES.map(g => ({ ...g, count: getHistory(g.key).length }));
+      const anyHistory = totals.some(t => t.count > 0);
+      for (const g of totals) {
+        const li = document.createElement('li');
+        li.className = 'py-3 flex items-center justify-between gap-3 flex-wrap';
+        const label = document.createElement('span');
+        label.className = 'mono text-sm text-parchment';
+        label.textContent = g.label;
+        const right = document.createElement('div');
+        right.className = 'flex items-center gap-3';
+        const count = document.createElement('span');
+        count.className = 'mono text-xs ' + (g.count > 0 ? 'text-gold-bright' : 'text-parchment-dim');
+        count.textContent = g.count + ' hand' + (g.count === 1 ? '' : 's');
+        right.appendChild(count);
+        if (g.count > 0) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'mono text-xs uppercase tracking-widest px-2 py-1 border border-gold-deep/40 text-parchment-soft hover:text-gold-bright hover:border-gold transition-colors rounded-sm';
+          btn.textContent = 'Clear';
+          btn.addEventListener('click', () => {
+            if (!confirm(`Clear all ${g.label} hands? This cannot be undone.`)) return;
+            clearHistory(g.key);
+            renderHistory();
+            showToast('history-toast', `${g.label} history cleared.`);
+          });
+          right.appendChild(btn);
+        }
+        li.appendChild(label);
+        li.appendChild(right);
+        list.appendChild(li);
+      }
+      const clearAll = $<HTMLButtonElement>('history-clear-all');
+      if (clearAll) clearAll.disabled = !anyHistory;
+    }
+
+    function renderAll() {
+      renderProfile();
+      renderBankroll();
+      renderTutorials();
+      renderHistory();
+    }
+
+    // Profile save
+    $('profile-save')?.addEventListener('click', () => {
+      const input = $<HTMLInputElement>('username-input');
+      if (!input) return;
+      const username = input.value.trim();
+      if (!username) {
+        showToast('profile-toast', 'Username can’t be empty.');
+        return;
+      }
+      setProfile({ username, onboarded: true });
+      showToast('profile-toast', 'Saved.');
+    });
+    $<HTMLInputElement>('username-input')?.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Enter') {
+        e.preventDefault();
+        $<HTMLButtonElement>('profile-save')?.click();
+      }
+    });
+
+    // Bankroll
+    $('bankroll-reset')?.addEventListener('click', () => {
+      if (!confirm('Reset bankroll to $1,000 and zero out lifetime stats?')) return;
+      resetBankroll();
+      renderBankroll();
+      showToast('bankroll-toast', 'Bankroll reset to $1,000.');
+    });
+    $('bankroll-topup')?.addEventListener('click', () => {
+      const cur = getBalance();
+      if (cur >= STARTING_BANKROLL) {
+        showToast('bankroll-toast', 'Already at or above $1,000.');
+        return;
+      }
+      setBalance(Math.max(STARTING_BANKROLL, cur));
+      renderBankroll();
+      showToast('bankroll-toast', 'Topped up to $1,000.');
+    });
+
+    // Tutorials
+    $('tutorials-reset')?.addEventListener('click', () => {
+      resetTutorials();
+      renderTutorials();
+      showToast('tutorials-toast', 'Tutorials will replay on next visit.');
+    });
+
+    // History
+    $('history-clear-all')?.addEventListener('click', () => {
+      if (!confirm('Clear hand history for every game? This cannot be undone.')) return;
+      clearHistory();
+      renderHistory();
+      showToast('history-toast', 'All hand history cleared.');
+    });
+
+    // Danger zone
+    $('wipe-everything')?.addEventListener('click', () => {
+      if (!confirm('Wipe profile, bankroll, history, and tutorials? This cannot be undone.')) return;
+      const typed = prompt('Type WIPE to confirm.');
+      if (typed !== 'WIPE') {
+        showToast('wipe-toast', 'Wipe cancelled.');
+        return;
+      }
+      try {
+        localStorage.removeItem(PROFILE_KEY);
+        localStorage.removeItem(BANKROLL_KEY);
+        localStorage.removeItem(HISTORY_KEY);
+        localStorage.removeItem(TUTORIAL_KEY);
+      } catch {}
+      showToast('wipe-toast', 'Wiped. Redirecting…');
+      window.setTimeout(() => { window.location.href = '/onboarding'; }, 600);
+    });
+
+    // Re-render on cross-tab events
+    window.addEventListener('chipshot:bankroll', renderBankroll);
+    window.addEventListener('chipshot:history', renderHistory);
+    window.addEventListener('storage', (e) => {
+      if (!e.key) return renderAll();
+      if (e.key === BANKROLL_KEY) renderBankroll();
+      if (e.key === HISTORY_KEY) renderHistory();
+      if (e.key === TUTORIAL_KEY) renderTutorials();
+      if (e.key === PROFILE_KEY) renderProfile();
+    });
+
+    renderAll();
+  </script>
+</PokerLayout>

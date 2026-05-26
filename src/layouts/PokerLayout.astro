@@ -1,16 +1,19 @@
 ---
 import '../styles/global.css';
+import SoundToggle from '../components/SoundToggle.astro';
 
 export interface Props {
   title: string;
   description: string;
-  active?: 'home' | 'hands' | 'stats' | 'play';
+  active?: 'home' | 'hands' | 'stats' | 'play' | 'games';
+  hideChrome?: boolean;
 }
 
-const { title, description, active } = Astro.props;
+const { title, description, active, hideChrome = false } = Astro.props;
 
 const nav = [
   { href: '/', label: 'Home', key: 'home' },
+  { href: '/games', label: 'Games', key: 'games' },
   { href: '/hands', label: 'Hands', key: 'hands' },
   { href: '/stats', label: 'Stats', key: 'stats' },
   { href: '/play', label: 'Play', key: 'play' },
@@ -45,6 +48,15 @@ const nav = [
 
     <slot name="head" />
     <script src="/template-topheader.js" defer></script>
+    <script>
+      import { getBalance, onBalanceChange } from '../lib/bankroll.js';
+      const fmt = (n) => '$' + Math.round(n).toLocaleString();
+      const paint = (v) => {
+        document.querySelectorAll('[data-chip-balance]').forEach((el) => { el.textContent = fmt(v); });
+      };
+      paint(getBalance());
+      onBalanceChange(paint);
+    </script>
     <style>
       /* Offset page below dcrader portfolio bar (34px fixed-position) so the header isn't clipped */
       html.dt-th-spaced body { padding-top: 34px; }
@@ -70,21 +82,28 @@ const nav = [
             ChipShot<span class="text-gold-bright"> Poker</span>
           </span>
         </a>
-        <nav aria-label="Primary">
-          <ul class="flex items-center gap-0 sm:gap-1">
-            {nav.map((n) => (
-              <li>
-                <a
-                  href={n.href}
-                  class={`mono text-xs sm:text-sm px-2.5 sm:px-3.5 py-2 rounded-sm transition-colors ${active === n.key ? 'text-gold-bright bg-felt-deep/80 border border-gold-deep/60' : 'text-parchment-soft hover:text-gold-bright'}`}
-                  aria-current={active === n.key ? 'page' : undefined}
-                >
-                  {n.label.toUpperCase()}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="/games" class="chip-badge" data-chip-badge aria-label="Your chip balance">
+            <span class="chip-dot" aria-hidden="true"></span>
+            <span data-chip-balance>$1,000</span>
+          </a>
+          <SoundToggle />
+          <nav aria-label="Primary">
+            <ul class="flex items-center gap-0 sm:gap-1">
+              {nav.map((n) => (
+                <li>
+                  <a
+                    href={n.href}
+                    class={`mono text-xs sm:text-sm px-2 sm:px-3 py-2 rounded-sm transition-colors ${active === n.key ? 'text-gold-bright bg-felt-deep/80 border border-gold-deep/60' : 'text-parchment-soft hover:text-gold-bright'}`}
+                    aria-current={active === n.key ? 'page' : undefined}
+                  >
+                    {n.label.toUpperCase()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
     </header>
 

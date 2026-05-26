@@ -1,0 +1,272 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import Tutorial from '../../components/Tutorial.astro';
+---
+<PokerLayout
+  title="Video Poker (Jacks or Better) — ChipShot Poker"
+  description="9/6 Jacks-or-Better video poker. Bet, deal, hold, draw. Max-bet bonus on the royal flush."
+  active="games"
+>
+  <section class="max-w-3xl mx-auto px-4 py-8 fixed-bottom-pad">
+    <header class="mb-6">
+      <p class="eyebrow text-gold-bright mono text-xs tracking-widest">SINGLE-PLAYER</p>
+      <h1 class="display text-3xl sm:text-4xl text-parchment mt-1">Video Poker</h1>
+      <p class="text-parchment-soft text-sm mt-2 max-w-xl">
+        9/6 Jacks or Better. Pick a bet, hit <strong class="text-gold-bright">Deal</strong>, tap any cards to HOLD,
+        then <strong class="text-gold-bright">Draw</strong> to replace the rest. Max bet (5) unlocks the 800x royal payout.
+      </p>
+    </header>
+
+    <!-- Paytable -->
+    <div class="vp-paytable-wrap">
+      <table class="vp-paytable" aria-label="Video poker paytable, multiplier per credit bet">
+        <thead>
+          <tr>
+            <th scope="col" class="vp-pt-label">Hand</th>
+            <th scope="col">1</th>
+            <th scope="col">2</th>
+            <th scope="col">3</th>
+            <th scope="col">4</th>
+            <th scope="col" class="is-max">5 <span class="vp-max">MAX</span></th>
+          </tr>
+        </thead>
+        <tbody data-vp-paytable></tbody>
+      </table>
+      <p class="vp-paytable-note">
+        Royal Flush at max bet pays <strong class="text-gold-bright">800x</strong> per credit (4000 on a $5 bet).
+      </p>
+    </div>
+
+    <!-- Felt + cards -->
+    <div class="felt-table mt-6" data-vp-root>
+      <div class="vp-banner" data-vp-banner aria-live="polite" role="status"></div>
+
+      <div class="vp-cards" data-vp-cards aria-label="Your five cards"></div>
+
+      <p class="vp-last-result mono text-xs mt-4 text-center" data-vp-last>
+        Place a bet and hit Deal.
+      </p>
+    </div>
+
+    <!-- Bet / credits readout -->
+    <div class="vp-status mt-4">
+      <div class="vp-stat">
+        <span class="stat-label">Credits</span>
+        <span class="vp-stat-val" data-vp-credits>$1,000</span>
+      </div>
+      <div class="vp-stat">
+        <span class="stat-label">Bet</span>
+        <span class="vp-stat-val" data-vp-bet>$5</span>
+      </div>
+    </div>
+
+    <p class="vp-low-chips mt-3" data-vp-lowchips hidden>
+      You&apos;re out of chips. <a class="text-gold-bright underline" href="/settings">Reset your bankroll</a> to keep playing.
+    </p>
+
+    <!-- Action bar -->
+    <div class="game-action-bar sticky-mobile mt-6">
+      <div class="bet-chip-row" role="group" aria-label="Bet size (credits)">
+        {[1, 2, 3, 4, 5].map((v) => (
+          <button
+            type="button"
+            class="bet-chip"
+            data-vp-chip={v}
+            data-val={v === 5 ? '5' : v === 1 ? '1' : '25'}
+            aria-label={`Bet ${v} credit${v === 1 ? '' : 's'}`}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+      <button type="button" class="action-btn is-primary" data-vp-deal>Deal</button>
+    </div>
+  </section>
+
+  <Tutorial game="videopoker" steps={[
+    { title: "Goal", body: "Make a paying poker hand. Minimum to pay: a pair of Jacks." },
+    { title: "Play", body: "Choose your bet size, hit Deal, click cards to HOLD, hit Draw to replace the rest." },
+    { title: "Paytable", body: "9/6 Jacks-or-Better: jacks+ pay 1x bet, two pair 2x, trips 3x... up to royal flush at 800x bet (max-bet only)." },
+  ]} />
+</PokerLayout>
+
+<style>
+  .vp-paytable-wrap {
+    background: rgba(6, 24, 18, 0.7);
+    border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 8px;
+    padding: 10px 8px 6px;
+    overflow-x: auto;
+  }
+  .vp-paytable {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono, monospace);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-parchment, #f3e8c8);
+    font-size: 12px;
+  }
+  .vp-paytable th, .vp-paytable td {
+    padding: 4px 8px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .vp-paytable th {
+    font-weight: 700;
+    color: var(--color-gold-bright, #f0c855);
+    border-bottom: 1px solid rgba(212,175,55,0.3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .vp-paytable th.is-max { color: var(--color-gold-bright); }
+  .vp-paytable .vp-pt-label {
+    text-align: left;
+    color: var(--color-parchment-soft, #d9cda6);
+  }
+  .vp-paytable tbody tr {
+    border-bottom: 1px dotted rgba(212,175,55,0.12);
+  }
+  .vp-paytable tbody tr:last-child { border-bottom: none; }
+  .vp-paytable td.is-active-bet {
+    background: rgba(240,200,85,0.13);
+    color: var(--color-gold-bright);
+    font-weight: 700;
+  }
+  .vp-paytable td.is-bonus {
+    color: var(--color-gold-bright);
+    font-weight: 800;
+  }
+  .vp-paytable tr.is-flash td {
+    animation: vpRowFlash 1.8s ease-out;
+  }
+  @keyframes vpRowFlash {
+    0%, 100% { background: transparent; }
+    20%, 60% { background: rgba(74,222,128,0.28); }
+  }
+  .vp-max {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    background: var(--color-gold, #d4af37);
+    color: var(--color-felt-deep, #082619);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+  }
+  .vp-paytable-note {
+    font-family: var(--font-mono, monospace);
+    font-size: 11px;
+    color: var(--color-parchment-soft);
+    text-align: center;
+    margin: 6px 0 2px;
+  }
+
+  .vp-cards {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 18px 4px 8px;
+    min-height: 150px;
+  }
+  @media (max-width: 480px) {
+    .vp-cards { gap: 6px; }
+  }
+
+  .vp-banner {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translate(-50%, -10px);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 18px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--color-gold-bright, #f0c855) 0%, var(--color-gold, #d4af37) 100%);
+    color: var(--color-felt-deep, #082619);
+    font-family: var(--font-display, serif);
+    font-weight: 800;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,0,0,0.2) inset;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 5;
+  }
+  .vp-banner.is-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .vp-banner-text {
+    font-size: 18px;
+    letter-spacing: 0.04em;
+  }
+  .vp-banner-payout {
+    font-family: var(--font-mono, monospace);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .vp-last-result {
+    color: var(--color-parchment-soft);
+    min-height: 1.2em;
+  }
+  .vp-last-result.is-win { color: var(--color-win, #4ade80); }
+  .vp-last-result.is-loss { color: var(--color-parchment-dim, #a89e7a); }
+
+  .vp-status {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    align-items: center;
+  }
+  .vp-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background: rgba(6, 24, 18, 0.6);
+    border: 1px solid rgba(212,175,55,0.25);
+    min-width: 96px;
+  }
+  .vp-stat-val {
+    font-family: var(--font-mono, monospace);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--color-gold-bright);
+    font-size: 16px;
+  }
+
+  .vp-low-chips {
+    text-align: center;
+    font-family: var(--font-mono, monospace);
+    font-size: 12px;
+    color: var(--color-loss, #f87171);
+  }
+
+  .bet-chip.is-active {
+    transform: translateY(-4px);
+    box-shadow:
+      0 3px 6px rgba(0,0,0,0.4),
+      0 0 0 2px var(--color-gold-bright, #f0c855),
+      0 1px 0 rgba(255,255,255,0.2) inset;
+  }
+  .bet-chip:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .bet-chip:disabled:hover {
+    transform: none;
+    filter: none;
+  }
+</style>
+
+<script>
+  import { init } from '../../lib/games/videopoker.js';
+  const root = document.querySelector('[data-vp-root]')?.closest('section');
+  if (root) init(root);
+</script>

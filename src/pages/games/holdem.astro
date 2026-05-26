@@ -1,0 +1,107 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import Tutorial from '../../components/Tutorial.astro';
+---
+<PokerLayout
+  title="Texas Hold'em — ChipShot Poker"
+  description="Playable single-player Texas Hold'em against three bots, with pokersolver-driven showdowns and chip tracking."
+  active="games"
+>
+  <section class="max-w-5xl mx-auto px-4 py-8 fixed-bottom-pad">
+    <div class="flex items-center justify-between gap-3 flex-wrap mb-4">
+      <div>
+        <h1 class="display text-3xl sm:text-4xl text-parchment">Texas Hold&apos;em</h1>
+        <p class="text-sm text-parchment-soft mono uppercase tracking-wider mt-1">
+          <span id="hold-street">PREFLOP</span> &middot; <a href="/games" class="hover:text-gold-bright">Leave table</a>
+        </p>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="felt-pot" id="hold-pot">Pot $0</span>
+      </div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-[1fr_220px]">
+      <div class="felt-table">
+        <!-- Bot row (top) -->
+        <div class="flex justify-around items-start gap-2 mb-6">
+          <!-- Bot West -->
+          <div class="player-seat" data-seat="1">
+            <div class="player-name">Bot West</div>
+            <div class="player-stack" data-seat-stack>$1000</div>
+            <div class="flex gap-1" data-seat-cards></div>
+            <div class="player-bet" data-seat-bet style="display:none"></div>
+          </div>
+          <!-- Bot North -->
+          <div class="player-seat" data-seat="2">
+            <div class="player-name">Bot North</div>
+            <div class="player-stack" data-seat-stack>$1000</div>
+            <div class="flex gap-1" data-seat-cards></div>
+            <div class="player-bet" data-seat-bet style="display:none"></div>
+          </div>
+          <!-- Bot East -->
+          <div class="player-seat" data-seat="3">
+            <div class="player-name">Bot East</div>
+            <div class="player-stack" data-seat-stack>$1000</div>
+            <div class="flex gap-1" data-seat-cards></div>
+            <div class="player-bet" data-seat-bet style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- Board -->
+        <div class="flex justify-center items-center gap-2 my-6 min-h-[100px]" id="hold-board" aria-label="Community cards"></div>
+
+        <!-- Hero -->
+        <div class="flex justify-center mt-6">
+          <div class="player-seat" data-seat="0" style="min-width:200px">
+            <div class="player-name">You</div>
+            <div class="player-stack" data-seat-stack>$1000</div>
+            <div class="flex gap-2 my-1" id="hold-hero-cards"></div>
+            <div class="player-bet" data-seat-bet style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="flex flex-col gap-2">
+        <p class="stat-label">Log</p>
+        <div class="game-log" id="hold-log" aria-live="polite"></div>
+      </aside>
+    </div>
+
+    <!-- Bust notice -->
+    <div id="hold-busted" hidden class="mt-6 p-4 rounded border border-red-500/40 bg-red-950/30 text-center">
+      <p class="text-parchment mono uppercase tracking-wider mb-2">Your chips are gone</p>
+      <p class="text-sm text-parchment-soft mb-3">Reset your bankroll to keep playing.</p>
+      <a href="/settings" class="action-btn is-primary">Reset bankroll</a>
+    </div>
+
+    <!-- Action bar -->
+    <div class="mt-6 game-action-bar sticky-mobile" id="hold-actions" hidden>
+      <button class="action-btn is-danger" id="hold-fold" type="button">Fold</button>
+      <button class="action-btn" id="hold-call" type="button">Check</button>
+      <button class="action-btn" data-raise="half" type="button">1/2 pot</button>
+      <button class="action-btn" data-raise="pot" type="button">Pot</button>
+      <button class="action-btn is-primary" data-raise="allin" type="button">All-in</button>
+    </div>
+    <div class="mt-6 game-action-bar">
+      <button class="action-btn is-primary" id="hold-next" type="button" hidden>Next hand</button>
+    </div>
+  </section>
+
+  <Tutorial
+    game="holdem"
+    steps={[
+      { title: "Goal", body: "Make the best 5-card hand from your 2 hole cards + 5 board cards." },
+      { title: "Action", body: "Each round: check, call, raise, or fold. Bet to thin the field." },
+      { title: "Stack", body: "You start at the chip balance shown top-right. Win to grow it, bust to reset from the lobby." }
+    ]}
+  />
+</PokerLayout>
+
+<script>
+  import { init } from '../../lib/games/holdem.js';
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>

@@ -68,16 +68,146 @@ const kpis = [
 ---
 <PokerLayout
   title="Stats dashboard — ChipShot Poker"
-  description="A demo poker stat dashboard: KPIs, bankroll over time, positional winrate, and showdown frequency."
+  description="Live poker stats computed from your local hand history."
   active="stats"
 >
+  <!-- LIVE STATS (computed client-side from localStorage) -->
   <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <span class="eyebrow">Dashboard</span>
+        <span class="eyebrow">Your session</span>
+        <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Live stats</h1>
+        <p class="text-parchment-soft text-sm mt-2 max-w-xl">
+          Computed from hands you've played in this browser. Updates the moment a hand finishes.
+        </p>
+      </div>
+      <div class="mono text-xs text-parchment-dim">
+        <span data-live-updated>Awaiting first hand</span>
+      </div>
+    </div>
+    <div class="gold-rule mt-6"></div>
+  </section>
+
+  <!-- Empty state (shown when no hands logged) -->
+  <section
+    data-live-empty
+    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 hidden"
+    aria-live="polite"
+  >
+    <div class="panel p-6 sm:p-8 text-center">
+      <p class="display text-2xl text-parchment">No hands logged yet</p>
+      <p class="text-parchment-soft text-sm mt-2">
+        Play a hand and your numbers will appear here.
+      </p>
+      <div class="mt-5">
+        <a href="/games" class="btn-gold">Take a seat &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live content (shown when there are hands) -->
+  <div data-live-content class="hidden">
+    <!-- Headline KPIs -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+      <ul class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <li class="panel p-4">
+          <p class="stat-label">Bankroll</p>
+          <p class="mono font-semibold text-2xl mt-1 text-gold-bright" data-live="balance">$&mdash;</p>
+          <p class="text-parchment-dim text-xs mt-1">current chips</p>
+        </li>
+        <li class="panel p-4">
+          <p class="stat-label">Net since start</p>
+          <p class="mono font-semibold text-2xl mt-1" data-live="net">&mdash;</p>
+          <p class="text-parchment-dim text-xs mt-1">vs starting bankroll</p>
+        </li>
+        <li class="panel p-4">
+          <p class="stat-label">Hands played</p>
+          <p class="mono font-semibold text-2xl mt-1 text-gold-bright" data-live="hands">0</p>
+          <p class="text-parchment-dim text-xs mt-1">across all games</p>
+        </li>
+        <li class="panel p-4">
+          <p class="stat-label">Win rate</p>
+          <p class="mono font-semibold text-2xl mt-1 text-gold-bright" data-live="winrate">&mdash;</p>
+          <p class="text-parchment-dim text-xs mt-1">wins / decisive hands</p>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Recent streak + Lifetime totals -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5 grid lg:grid-cols-3 gap-5">
+      <div class="panel p-5 sm:p-7 lg:col-span-2">
+        <div class="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 class="display text-2xl text-parchment">Recent streak</h2>
+            <p class="text-parchment-soft text-sm">Last 10 results, newest on the right.</p>
+          </div>
+          <div class="mono text-xs text-parchment-dim">
+            <span class="win">&#9679;</span> win &nbsp;
+            <span class="loss">&#9679;</span> loss &nbsp;
+            <span class="text-parchment-dim">&#9679;</span> push
+          </div>
+        </div>
+        <ol class="mt-5 flex gap-2 flex-wrap" data-live="streak" aria-label="Recent results">
+          <!-- streak dots injected here -->
+        </ol>
+      </div>
+
+      <div class="panel p-5 sm:p-7">
+        <h2 class="display text-2xl text-parchment">Lifetime</h2>
+        <p class="text-parchment-soft text-sm">All chips moved through your stack.</p>
+        <ul class="mt-5 space-y-3">
+          <li class="flex items-center justify-between">
+            <span class="stat-label">Total won</span>
+            <span class="mono text-lg win" data-live="lifetime-won">$0</span>
+          </li>
+          <li class="flex items-center justify-between">
+            <span class="stat-label">Total lost</span>
+            <span class="mono text-lg loss" data-live="lifetime-lost">$0</span>
+          </li>
+          <li class="flex items-center justify-between border-t border-gold-deep/20 pt-3">
+            <span class="stat-label">Net</span>
+            <span class="mono text-lg" data-live="lifetime-net">$0</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Per-game breakdown -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+      <div class="panel p-5 sm:p-7">
+        <h2 class="display text-2xl text-parchment">By game</h2>
+        <p class="text-parchment-soft text-sm">A breakdown of every table you've sat at.</p>
+
+        <div class="mt-5 overflow-x-auto">
+          <table class="w-full text-sm min-w-[640px]">
+            <thead>
+              <tr class="text-left border-b border-gold-deep/30">
+                <th class="stat-label py-2 pr-3">Game</th>
+                <th class="stat-label py-2 px-3 text-right">Hands</th>
+                <th class="stat-label py-2 px-3 text-right">W / L / P</th>
+                <th class="stat-label py-2 px-3 text-right">Net</th>
+                <th class="stat-label py-2 px-3 text-right">Biggest win</th>
+                <th class="stat-label py-2 px-3 text-right">Biggest loss</th>
+                <th class="stat-label py-2 pl-3 text-right">Win&nbsp;%</th>
+              </tr>
+            </thead>
+            <tbody data-live="game-rows" class="mono">
+              <!-- rows injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- SAMPLE DEMO STATS BELOW -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-14">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <span class="eyebrow">Sample dashboard</span>
         <h1 class="display text-3xl sm:text-4xl text-parchment mt-3">Your numbers</h1>
         <p class="text-parchment-soft text-sm mt-2 max-w-xl">
-          A snapshot of fourteen thousand hands. Sample data &mdash; in production every cell is filtered by stake, position, date, and tag.
+          Sample stats. Real data will appear above once you play. A snapshot of fourteen thousand hands &mdash; in production every cell is filtered by stake, position, date, and tag.
         </p>
       </div>
       <div class="mono text-xs text-parchment-dim">
@@ -249,4 +379,176 @@ const kpis = [
       <a href="/play" class="btn-gold">See the workflow</a>
     </div>
   </section>
+
+  <script>
+    import { getHistory, GAME_LABELS, onHistoryChange } from '../lib/history.js';
+    import { getBalance, getLifetime, STARTING_BANKROLL, onBalanceChange } from '../lib/bankroll.js';
+
+    const fmtMoney = (n) => {
+      const sign = n < 0 ? '-' : '';
+      const abs = Math.abs(Math.round(n * 100) / 100);
+      return sign + '$' + abs.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    };
+    const fmtSigned = (n) => (n >= 0 ? '+' : '') + fmtMoney(n);
+    const fmtPct = (n) => (Math.round(n * 10) / 10).toFixed(1) + '%';
+
+    function $(sel, root) {
+      return (root || document).querySelector(sel);
+    }
+    function $all(sel, root) {
+      return Array.from((root || document).querySelectorAll(sel));
+    }
+
+    function escapeHTML(s) {
+      return String(s).replace(/[&<>"']/g, (c) => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+      ));
+    }
+
+    function render() {
+      const all = getHistory();
+      const balance = getBalance();
+      const lifetime = getLifetime();
+
+      const emptyEl = $('[data-live-empty]');
+      const contentEl = $('[data-live-content]');
+      const updatedEl = $('[data-live-updated]');
+
+      if (!all || all.length === 0) {
+        emptyEl?.classList.remove('hidden');
+        contentEl?.classList.add('hidden');
+        if (updatedEl) updatedEl.textContent = 'Awaiting first hand';
+        return;
+      }
+      emptyEl?.classList.add('hidden');
+      contentEl?.classList.remove('hidden');
+
+      // Headline KPIs
+      const hands = all.length;
+      const wins = all.filter((h) => h.result === 'win').length;
+      const losses = all.filter((h) => h.result === 'loss').length;
+      const pushes = all.filter((h) => h.result === 'push').length;
+      const decisive = wins + losses;
+      const winrate = decisive > 0 ? (wins / decisive) * 100 : 0;
+      const net = balance - STARTING_BANKROLL;
+
+      const balanceEl = $('[data-live="balance"]');
+      if (balanceEl) balanceEl.textContent = fmtMoney(balance);
+
+      const netEl = $('[data-live="net"]');
+      if (netEl) {
+        netEl.textContent = fmtSigned(net);
+        netEl.classList.remove('win', 'loss', 'text-gold-bright');
+        if (net > 0) netEl.classList.add('win');
+        else if (net < 0) netEl.classList.add('loss');
+        else netEl.classList.add('text-gold-bright');
+      }
+
+      const handsEl = $('[data-live="hands"]');
+      if (handsEl) handsEl.textContent = String(hands);
+
+      const winrateEl = $('[data-live="winrate"]');
+      if (winrateEl) winrateEl.textContent = decisive > 0 ? fmtPct(winrate) : '—';
+
+      // Updated stamp
+      if (updatedEl) {
+        const latest = all[0]?.at;
+        if (latest) {
+          try {
+            const d = new Date(latest);
+            updatedEl.textContent = 'Updated ' + d.toLocaleString(undefined, {
+              month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+            });
+          } catch { updatedEl.textContent = 'Updated just now'; }
+        }
+      }
+
+      // Recent streak (last 10, oldest left → newest right)
+      const streakEl = $('[data-live="streak"]');
+      if (streakEl) {
+        const last10 = all.slice(0, 10).reverse();
+        streakEl.innerHTML = last10.map((h) => {
+          const color =
+            h.result === 'win' ? '#4ade80' :
+            h.result === 'loss' ? '#f87171' :
+            '#6b6651';
+          const label =
+            h.result === 'win' ? 'Win' :
+            h.result === 'loss' ? 'Loss' : 'Push';
+          const delta = typeof h.delta === 'number' ? fmtSigned(h.delta) : '';
+          const game = GAME_LABELS[h.game] || h.game || '';
+          const title = `${label}${delta ? ' ' + delta : ''} — ${escapeHTML(game)}`;
+          return `<li class="inline-flex items-center justify-center w-5 h-5 rounded-full" style="background:${color};opacity:0.9;" title="${title}" aria-label="${title}"></li>`;
+        }).join('');
+      }
+
+      // Lifetime
+      const won = lifetime.won || 0;
+      const lost = lifetime.lost || 0;
+      const wonEl = $('[data-live="lifetime-won"]');
+      const lostEl = $('[data-live="lifetime-lost"]');
+      const lnetEl = $('[data-live="lifetime-net"]');
+      if (wonEl) wonEl.textContent = fmtMoney(won);
+      if (lostEl) lostEl.textContent = '-' + fmtMoney(lost);
+      if (lnetEl) {
+        const lnet = won - lost;
+        lnetEl.textContent = fmtSigned(lnet);
+        lnetEl.classList.remove('win', 'loss');
+        if (lnet > 0) lnetEl.classList.add('win');
+        else if (lnet < 0) lnetEl.classList.add('loss');
+      }
+
+      // Per-game table
+      const rowsEl = $('[data-live="game-rows"]');
+      if (rowsEl) {
+        const byGame = {};
+        for (const h of all) {
+          const g = h.game || 'unknown';
+          if (!byGame[g]) byGame[g] = [];
+          byGame[g].push(h);
+        }
+        const rows = Object.entries(byGame).map(([g, list]) => {
+          const w = list.filter((h) => h.result === 'win').length;
+          const l = list.filter((h) => h.result === 'loss').length;
+          const p = list.filter((h) => h.result === 'push').length;
+          const dec = w + l;
+          const wr = dec > 0 ? (w / dec) * 100 : 0;
+          const deltas = list.map((h) => (typeof h.delta === 'number' ? h.delta : 0));
+          const gnet = deltas.reduce((a, b) => a + b, 0);
+          const bigWin = deltas.filter((d) => d > 0).reduce((a, b) => Math.max(a, b), 0);
+          const bigLoss = deltas.filter((d) => d < 0).reduce((a, b) => Math.min(a, b), 0);
+          const label = GAME_LABELS[g] || g;
+          const netCls = gnet > 0 ? 'win' : gnet < 0 ? 'loss' : 'text-parchment';
+          return `
+            <tr class="border-b border-gold-deep/15">
+              <td class="py-2 pr-3 text-parchment">${escapeHTML(label)}</td>
+              <td class="py-2 px-3 text-right text-parchment">${list.length}</td>
+              <td class="py-2 px-3 text-right">
+                <span class="win">${w}</span>
+                <span class="text-parchment-dim">/</span>
+                <span class="loss">${l}</span>
+                <span class="text-parchment-dim">/</span>
+                <span class="text-parchment-dim">${p}</span>
+              </td>
+              <td class="py-2 px-3 text-right ${netCls}">${fmtSigned(gnet)}</td>
+              <td class="py-2 px-3 text-right ${bigWin > 0 ? 'win' : 'text-parchment-dim'}">${bigWin > 0 ? fmtSigned(bigWin) : '—'}</td>
+              <td class="py-2 px-3 text-right ${bigLoss < 0 ? 'loss' : 'text-parchment-dim'}">${bigLoss < 0 ? fmtSigned(bigLoss) : '—'}</td>
+              <td class="py-2 pl-3 text-right text-parchment">${dec > 0 ? fmtPct(wr) : '—'}</td>
+            </tr>
+          `;
+        }).join('');
+        rowsEl.innerHTML = rows;
+      }
+    }
+
+    // Initial render + subscriptions
+    render();
+    onHistoryChange(render);
+    onBalanceChange(render);
+
+    // Cross-tab: storage events for history (history.js dispatches only same-tab events)
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'chipshot.history.v1' || e.key === 'chipshot.bankroll.v1') render();
+    });
+  </script>
 </PokerLayout>

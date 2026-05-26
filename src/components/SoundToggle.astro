@@ -1,0 +1,125 @@
+---
+// SoundToggle — mute / unmute button for the synthesized SFX module.
+// Listens for `chipshot:sfxchange` so multiple instances stay in sync.
+---
+<button
+  type="button"
+  data-sfx-toggle
+  aria-label="Mute sound effects"
+  aria-pressed="false"
+  title="Sound effects"
+  class="sfx-toggle"
+>
+  <svg
+    class="sfx-icon sfx-icon-on"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none" />
+    <path d="M16.5 8.5a5 5 0 0 1 0 7" />
+    <path d="M19 6a8 8 0 0 1 0 12" />
+  </svg>
+  <svg
+    class="sfx-icon sfx-icon-off"
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none" />
+    <line x1="16" y1="9" x2="22" y2="15" />
+    <line x1="22" y1="9" x2="16" y2="15" />
+  </svg>
+</button>
+
+<style>
+  .sfx-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    background: rgba(13, 59, 46, 0.6);
+    color: #f0c855;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sfx-toggle:hover {
+    color: #f7d977;
+    border-color: rgba(212, 175, 55, 0.75);
+    background: rgba(13, 59, 46, 0.85);
+  }
+  .sfx-toggle:focus-visible {
+    outline: 2px solid #f0c855;
+    outline-offset: 2px;
+  }
+  .sfx-toggle:active {
+    transform: scale(0.94);
+  }
+  .sfx-toggle[data-muted='true'] {
+    color: #b8a070;
+    border-color: rgba(184, 160, 112, 0.35);
+  }
+  .sfx-icon-off { display: none; }
+  .sfx-toggle[data-muted='true'] .sfx-icon-on { display: none; }
+  .sfx-toggle[data-muted='true'] .sfx-icon-off { display: inline-block; }
+</style>
+
+<script>
+  import { isMuted, toggleMuted } from '../lib/sfx.js';
+
+  const EVENT = 'chipshot:sfxchange';
+
+  function paint(btn: HTMLElement, muted: boolean) {
+    btn.dataset.muted = muted ? 'true' : 'false';
+    btn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    btn.setAttribute(
+      'aria-label',
+      muted ? 'Unmute sound effects' : 'Mute sound effects'
+    );
+    btn.setAttribute('title', muted ? 'Sound off' : 'Sound on');
+  }
+
+  function wire() {
+    const buttons = document.querySelectorAll<HTMLElement>('[data-sfx-toggle]');
+    if (!buttons.length) return;
+    const initial = isMuted();
+    buttons.forEach((btn) => {
+      if (btn.dataset.sfxWired === '1') return;
+      btn.dataset.sfxWired = '1';
+      paint(btn, initial);
+      btn.addEventListener('click', () => {
+        const next = toggleMuted();
+        paint(btn, next);
+      });
+    });
+  }
+
+  document.addEventListener(EVENT, (e) => {
+    const muted = !!(e as CustomEvent).detail?.muted;
+    document
+      .querySelectorAll<HTMLElement>('[data-sfx-toggle]')
+      .forEach((btn) => paint(btn, muted));
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', wire);
+  } else {
+    wire();
+  }
+</script>

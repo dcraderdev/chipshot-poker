@@ -1,0 +1,100 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import Tutorial from '../../components/Tutorial.astro';
+---
+<PokerLayout title="Blackjack — ChipShot Poker" description="Standard 21 vs the dealer. Hit, stand, double, split." active="games">
+  <section class="max-w-3xl mx-auto px-4 py-8 fixed-bottom-pad" data-bj-root>
+    <header class="mb-6 flex items-end justify-between gap-4 flex-wrap">
+      <div>
+        <span class="eyebrow">Game</span>
+        <h1 class="display text-3xl sm:text-4xl text-parchment mt-1">Blackjack</h1>
+        <p class="text-parchment-soft text-sm mt-2 max-w-md">
+          Standard 21 vs the dealer. Dealer hits soft 17. Blackjack pays 3:2.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="felt-pot" aria-label="Your chips">
+          <span class="chip-dot" aria-hidden="true"></span>
+          <span data-bj-balance>$1,000</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="felt-table">
+      <div class="flex flex-col gap-5">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="player-name">DEALER</span>
+            <span class="player-bet" data-bj-dealer-total></span>
+          </div>
+          <div class="card-row min-h-[96px]" data-bj-dealer aria-live="polite" aria-label="Dealer hand"></div>
+        </div>
+
+        <p
+          class="text-center text-sm text-parchment min-h-[1.25rem]"
+          data-bj-message
+          aria-live="polite"
+        ></p>
+
+        <div>
+          <div class="flex flex-wrap items-end justify-center gap-4" data-bj-hands aria-label="Your hands"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5 grid gap-4 sm:grid-cols-[1fr_auto] items-center">
+      <div class="flex items-center gap-3 flex-wrap">
+        <span class="player-name">BET</span>
+        <span class="felt-pot" data-bj-bet>$25</span>
+        <div class="bet-chip-row" data-bj-chiprow role="group" aria-label="Add to bet">
+          <button class="bet-chip" data-val="5" aria-label="Add $5">$5</button>
+          <button class="bet-chip" data-val="25" aria-label="Add $25">$25</button>
+          <button class="bet-chip" data-val="100" aria-label="Add $100">$100</button>
+          <button class="bet-chip" data-val="500" aria-label="Add $500">$500</button>
+        </div>
+        <button class="action-btn" type="button" data-bj-clearbet>Clear</button>
+      </div>
+      <p
+        class="mono text-xs text-loss text-right hidden sm:block"
+        data-bj-lowchips
+        hidden
+      >
+        Low on chips. <a class="underline hover:text-gold-bright" href="/settings">Add more</a>
+      </p>
+    </div>
+
+    <p
+      class="mono text-xs text-loss mt-2 sm:hidden"
+      data-bj-lowchips
+      hidden
+    >
+      Low on chips. <a class="underline hover:text-gold-bright" href="/settings">Add more</a>
+    </p>
+
+    <div class="game-action-bar sticky-mobile mt-5">
+      <button class="action-btn is-primary" type="button" data-act="deal">Deal</button>
+      <button class="action-btn" type="button" data-act="hit" hidden>Hit</button>
+      <button class="action-btn" type="button" data-act="stand" hidden>Stand</button>
+      <button class="action-btn" type="button" data-act="double" hidden>Double</button>
+      <button class="action-btn" type="button" data-act="split" hidden>Split</button>
+      <button class="action-btn is-primary" type="button" data-act="next" hidden>Next hand</button>
+    </div>
+
+    <div class="mt-6">
+      <span class="eyebrow">Action log</span>
+      <div class="game-log mt-2" data-bj-log aria-live="polite" aria-label="Action log"></div>
+    </div>
+  </section>
+
+  <Tutorial game="blackjack" steps={[
+    { title: "Goal", body: "Get closer to 21 than the dealer without going over." },
+    { title: "Cards", body: "Face cards = 10. Aces = 1 or 11. Beating dealer pays 1:1. Natural blackjack pays 3:2." },
+    { title: "Decisions", body: "Hit takes a card. Stand ends your turn. Double doubles your bet for one more card. Split lets you play pairs as two hands." }
+  ]} />
+
+  <script>
+    import { init } from '../../lib/games/blackjack.js';
+    const root = document.querySelector('[data-bj-root]');
+    if (root) init(root);
+  </script>
+</PokerLayout>
