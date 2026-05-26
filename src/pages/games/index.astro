@@ -1,0 +1,417 @@
+---
+import PokerLayout from '../../layouts/PokerLayout.astro';
+import ChipBadge from '../../components/ChipBadge.astro';
+
+const games = [
+  {
+    slug: 'holdem',
+    name: "Texas Hold'em",
+    tag: "No-Limit · vs 3 bots",
+    blurb: "Four-handed cash game. Read the bots, size your bets, and let the river decide.",
+    statLabel: 'Min buy-in',
+    statValue: '$100',
+    tablesLabel: 'Live tables',
+    tablesValue: 14,
+  },
+  {
+    slug: 'blackjack',
+    name: 'Blackjack',
+    tag: "21 · vs dealer",
+    blurb: "Heads-up against the house. Hit, stand, double, split — dealer stands on soft 17.",
+    statLabel: 'Min bet',
+    statValue: '$5',
+    tablesLabel: 'Live tables',
+    tablesValue: 23,
+  },
+  {
+    slug: 'draw',
+    name: 'Five-Card Draw',
+    tag: "Heads-up · vs 1 bot",
+    blurb: "Old-school poker. Ante up, draw to your hand, and one round of betting decides it.",
+    statLabel: 'Ante',
+    statValue: '$10',
+    tablesLabel: 'Live tables',
+    tablesValue: 6,
+  },
+  {
+    slug: 'video-poker',
+    name: 'Video Poker',
+    tag: "Jacks or Better · 9/6",
+    blurb: "Solo play against a published paytable. Hold what counts, discard the rest.",
+    statLabel: 'Max bet',
+    statValue: '$5',
+    tablesLabel: 'Machines',
+    tablesValue: 32,
+  },
+];
+---
+<PokerLayout
+  title="Game Floor — ChipShot Poker"
+  description="Pick a game and take a seat. Demo chips replenish from the lobby."
+  active="games"
+>
+  <!-- HERO -->
+  <section class="relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-16 pb-10">
+      <div class="grid lg:grid-cols-12 gap-8 items-end">
+        <div class="lg:col-span-8">
+          <span class="eyebrow">The Game Floor</span>
+          <h1 class="display mt-5 text-4xl sm:text-5xl lg:text-6xl text-parchment leading-tight">
+            Take a <span class="text-gold-bright italic">seat</span>.<br />
+            The felt is <span class="text-gold-bright italic">warm</span>.
+          </h1>
+          <div class="gold-rule my-6 max-w-md"></div>
+          <p class="text-parchment-soft text-base sm:text-lg max-w-xl leading-relaxed">
+            Four tables. One bankroll. Pick your poison and play — demo chips
+            replenish anytime from the lobby. No login, no stakes, no shame.
+          </p>
+          <div class="mt-7 flex flex-wrap gap-3 items-center">
+            <a href="/onboarding" class="btn-gold">How to onboard</a>
+            <a href="#tables" class="btn-ghost">Jump to tables</a>
+          </div>
+        </div>
+
+        <div class="lg:col-span-4">
+          <div class="panel p-5 sm:p-6">
+            <span class="stat-label">Your bankroll</span>
+            <div class="mt-3 flex items-center gap-3 flex-wrap">
+              <ChipBadge showLifetime />
+            </div>
+            <div class="gold-rule my-5"></div>
+            <dl class="grid grid-cols-2 gap-4">
+              <div>
+                <dt class="stat-label">Floor status</dt>
+                <dd class="stat-value text-lg mt-1 flex items-center gap-2">
+                  <span class="inline-block w-2 h-2 rounded-full bg-win" aria-hidden="true" style="box-shadow: 0 0 8px #4ade80;"></span>
+                  Open
+                </dd>
+              </div>
+              <div>
+                <dt class="stat-label">House rake</dt>
+                <dd class="stat-value text-lg mt-1">0%</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gold-rule"></div>
+  </section>
+
+  <!-- LIVE PLAYER STRIP -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="panel px-5 py-4 sm:py-3">
+      <div class="flex items-center gap-4 sm:gap-6 flex-wrap justify-between" data-ticker>
+        <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="absolute inline-flex h-full w-full rounded-full bg-win opacity-60 ticker-pulse"></span>
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-win"></span>
+          </span>
+          <span class="stat-label">Live floor</span>
+        </div>
+        <dl class="flex items-center gap-5 sm:gap-8 flex-wrap mono text-sm">
+          <div class="flex items-baseline gap-2">
+            <dt class="text-parchment-dim text-xs uppercase tracking-wider">Online</dt>
+            <dd class="text-gold-bright font-semibold" data-ticker-players>47</dd>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <dt class="text-parchment-dim text-xs uppercase tracking-wider">Hands/min</dt>
+            <dd class="text-gold-bright font-semibold" data-ticker-hands>12</dd>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <dt class="text-parchment-dim text-xs uppercase tracking-wider">In play</dt>
+            <dd class="text-gold-bright font-semibold" data-ticker-pot>$1.2M</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME TILES -->
+  <section id="tables" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <span class="eyebrow">Tables open</span>
+        <h2 class="display text-2xl sm:text-3xl text-parchment mt-2">Four games. Pick one.</h2>
+      </div>
+      <span class="stat-label hidden sm:inline">Demo chips · no stakes</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+      {games.map((g) => (
+        <a
+          href={`/games/${g.slug}`}
+          class="game-tile panel p-5 flex flex-col gap-4 group hover:border-gold transition-colors"
+          data-tile={g.slug}
+        >
+          <div class="tile-art relative aspect-[4/3] rounded-sm overflow-hidden">
+            {g.slug === 'holdem' && (
+              <svg viewBox="0 0 320 240" class="w-full h-full" aria-hidden="true">
+                <defs>
+                  <radialGradient id={`feltH-${g.slug}`} cx="50%" cy="50%" r="65%">
+                    <stop offset="0%" stop-color="#1f7a55"/>
+                    <stop offset="65%" stop-color="#0d3b2e"/>
+                    <stop offset="100%" stop-color="#062018"/>
+                  </radialGradient>
+                </defs>
+                <rect width="320" height="240" fill={`url(#feltH-${g.slug})`}/>
+                <ellipse cx="160" cy="125" rx="135" ry="80" fill="none" stroke="#a3851f" stroke-width="1" stroke-dasharray="3 5" opacity="0.45"/>
+                {/* Community cards */}
+                <g transform="translate(40,90)">
+                  <g transform="translate(0,4) rotate(-3)">
+                    <rect width="42" height="58" rx="4" fill="#f7f1de"/>
+                    <text x="9" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#0c0c0c">A</text>
+                    <text x="9" y="36" font-size="14" fill="#0c0c0c">&#9824;</text>
+                  </g>
+                  <g transform="translate(48,0)">
+                    <rect width="42" height="58" rx="4" fill="#f7f1de"/>
+                    <text x="9" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#d9404a">K</text>
+                    <text x="9" y="36" font-size="14" fill="#d9404a">&#9829;</text>
+                  </g>
+                  <g transform="translate(96,2) rotate(2)">
+                    <rect width="42" height="58" rx="4" fill="#f7f1de"/>
+                    <text x="9" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#0c0c0c">7</text>
+                    <text x="9" y="36" font-size="14" fill="#0c0c0c">&#9827;</text>
+                  </g>
+                  <g transform="translate(144,0)">
+                    <rect width="42" height="58" rx="4" fill="#f7f1de"/>
+                    <text x="9" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#d9404a">3</text>
+                    <text x="9" y="36" font-size="14" fill="#d9404a">&#9830;</text>
+                  </g>
+                  <g transform="translate(192,3) rotate(-2)">
+                    <rect width="42" height="58" rx="4" fill="#f7f1de"/>
+                    <text x="9" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#0c0c0c">2</text>
+                    <text x="9" y="36" font-size="14" fill="#0c0c0c">&#9824;</text>
+                  </g>
+                </g>
+                {/* chip stacks */}
+                <g transform="translate(60,195)">
+                  <ellipse cx="0" cy="6" rx="16" ry="4" fill="#c9302c" stroke="#f0c855" stroke-width="0.6"/>
+                  <ellipse cx="0" cy="2" rx="16" ry="4" fill="#2f6b9a" stroke="#f0c855" stroke-width="0.6"/>
+                  <ellipse cx="0" cy="-2" rx="16" ry="4" fill="#111" stroke="#f0c855" stroke-width="0.6"/>
+                </g>
+                <g transform="translate(260,200)">
+                  <ellipse cx="0" cy="4" rx="16" ry="4" fill="#2f6b9a" stroke="#f0c855" stroke-width="0.6"/>
+                  <ellipse cx="0" cy="0" rx="16" ry="4" fill="#c9302c" stroke="#f0c855" stroke-width="0.6"/>
+                </g>
+              </svg>
+            )}
+            {g.slug === 'blackjack' && (
+              <svg viewBox="0 0 320 240" class="w-full h-full" aria-hidden="true">
+                <defs>
+                  <radialGradient id={`feltB-${g.slug}`} cx="50%" cy="45%" r="70%">
+                    <stop offset="0%" stop-color="#1f7a55"/>
+                    <stop offset="65%" stop-color="#0d3b2e"/>
+                    <stop offset="100%" stop-color="#062018"/>
+                  </radialGradient>
+                </defs>
+                <rect width="320" height="240" fill={`url(#feltB-${g.slug})`}/>
+                {/* dealer arc */}
+                <path d="M 30 60 Q 160 -10 290 60" fill="none" stroke="#a3851f" stroke-width="1" stroke-dasharray="3 4" opacity="0.5"/>
+                <text x="160" y="50" text-anchor="middle" font-family="Playfair Display, serif" font-style="italic" font-size="11" fill="#d4af37" opacity="0.85">Blackjack pays 3:2</text>
+                {/* two cards: face card + ace = 21 */}
+                <g transform="translate(98,90) rotate(-8)">
+                  <rect width="58" height="84" rx="5" fill="#f7f1de" stroke="#0c0c0c" stroke-opacity="0.18"/>
+                  <text x="10" y="22" font-family="Playfair Display, serif" font-weight="700" font-size="18" fill="#0c0c0c">J</text>
+                  <text x="10" y="40" font-size="16" fill="#0c0c0c">&#9824;</text>
+                  <text x="32" y="72" font-family="Playfair Display, serif" font-weight="700" font-size="22" fill="#0c0c0c" opacity="0.18">J</text>
+                </g>
+                <g transform="translate(160,90) rotate(8)">
+                  <rect width="58" height="84" rx="5" fill="#f7f1de" stroke="#0c0c0c" stroke-opacity="0.18"/>
+                  <text x="10" y="22" font-family="Playfair Display, serif" font-weight="700" font-size="18" fill="#d9404a">A</text>
+                  <text x="10" y="40" font-size="16" fill="#d9404a">&#9829;</text>
+                  <text x="32" y="72" font-family="Playfair Display, serif" font-weight="700" font-size="22" fill="#d9404a" opacity="0.2">A</text>
+                </g>
+                {/* 21 medallion */}
+                <g transform="translate(245,180)">
+                  <circle r="28" fill="#0d3b2e" stroke="#d4af37" stroke-width="1.5"/>
+                  <circle r="22" fill="none" stroke="#d4af37" stroke-width="0.7" stroke-dasharray="2 3" opacity="0.7"/>
+                  <text y="6" text-anchor="middle" font-family="Playfair Display, serif" font-weight="800" font-size="20" fill="#f0c855">21</text>
+                </g>
+              </svg>
+            )}
+            {g.slug === 'draw' && (
+              <svg viewBox="0 0 320 240" class="w-full h-full" aria-hidden="true">
+                <defs>
+                  <radialGradient id={`feltD-${g.slug}`} cx="50%" cy="50%" r="70%">
+                    <stop offset="0%" stop-color="#1f7a55"/>
+                    <stop offset="65%" stop-color="#0d3b2e"/>
+                    <stop offset="100%" stop-color="#062018"/>
+                  </radialGradient>
+                </defs>
+                <rect width="320" height="240" fill={`url(#feltD-${g.slug})`}/>
+                {/* fan of 5 cards */}
+                <g transform="translate(160,160)">
+                  {[
+                    { rot: -28, rank: 'A', suit: '♠', color: '#0c0c0c' },
+                    { rot: -14, rank: 'K', suit: '♠', color: '#0c0c0c' },
+                    { rot: 0,   rank: 'Q', suit: '♠', color: '#0c0c0c' },
+                    { rot: 14,  rank: 'J', suit: '♠', color: '#0c0c0c' },
+                    { rot: 28,  rank: 'T', suit: '♠', color: '#0c0c0c' },
+                  ].map((c) => (
+                    <g transform={`rotate(${c.rot}) translate(-22,-110)`}>
+                      <rect width="44" height="62" rx="5" fill="#f7f1de" stroke="#0c0c0c" stroke-opacity="0.18"/>
+                      <text x="8" y="20" font-family="Playfair Display, serif" font-weight="700" font-size="15" fill={c.color}>{c.rank}</text>
+                      <text x="8" y="36" font-size="13" fill={c.color}>{c.suit}</text>
+                    </g>
+                  ))}
+                </g>
+                <text x="160" y="40" text-anchor="middle" font-family="Playfair Display, serif" font-style="italic" font-size="12" fill="#d4af37" opacity="0.85">Royal Flush</text>
+              </svg>
+            )}
+            {g.slug === 'video-poker' && (
+              <svg viewBox="0 0 320 240" class="w-full h-full" aria-hidden="true">
+                <defs>
+                  <linearGradient id={`screenVP-${g.slug}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#0d3b2e"/>
+                    <stop offset="100%" stop-color="#062018"/>
+                  </linearGradient>
+                </defs>
+                <rect width="320" height="240" fill="#0a1f17"/>
+                {/* paytable screen */}
+                <rect x="22" y="22" width="276" height="196" rx="8" fill={`url(#screenVP-${g.slug})`} stroke="#a3851f" stroke-width="1.5"/>
+                <text x="160" y="44" text-anchor="middle" font-family="Playfair Display, serif" font-style="italic" font-size="11" fill="#f0c855">Jacks or Better · 9/6</text>
+                <line x1="34" y1="54" x2="286" y2="54" stroke="#a3851f" stroke-opacity="0.5" stroke-width="0.5"/>
+                {[
+                  { l: 'Royal Flush',     v: '800' },
+                  { l: 'Straight Flush',  v: '50' },
+                  { l: 'Four of a Kind',  v: '25' },
+                  { l: 'Full House',      v: '9' },
+                  { l: 'Flush',           v: '6' },
+                  { l: 'Straight',        v: '4' },
+                  { l: 'Three of a Kind', v: '3' },
+                  { l: 'Two Pair',        v: '2' },
+                  { l: 'Jacks or Better', v: '1' },
+                ].map((row, i) => (
+                  <g transform={`translate(0,${66 + i * 16})`}>
+                    <text x="40" y="0" font-family="JetBrains Mono, monospace" font-size="10" fill="#d9cda6">{row.l}</text>
+                    <text x="280" y="0" text-anchor="end" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10" fill={i === 0 ? '#f0c855' : '#f3e8c8'}>{row.v}</text>
+                  </g>
+                ))}
+              </svg>
+            )}
+            <div class="absolute inset-0 ring-1 ring-inset ring-gold-deep/30 rounded-sm pointer-events-none"></div>
+          </div>
+
+          <div>
+            <div class="flex items-start justify-between gap-3">
+              <h3 class="display text-2xl text-gold-bright leading-tight group-hover:underline">{g.name}</h3>
+              <span class="mono text-[10px] tracking-wider text-parchment-dim uppercase whitespace-nowrap pt-2">{g.tablesValue} {g.tablesLabel.toLowerCase()}</span>
+            </div>
+            <p class="mono text-xs text-parchment-dim mt-1 uppercase tracking-wider">{g.tag}</p>
+            <p class="text-parchment-soft text-sm mt-3 leading-relaxed">{g.blurb}</p>
+          </div>
+
+          <div class="mt-auto">
+            <div class="gold-rule mb-4 opacity-60"></div>
+            <div class="flex items-end justify-between gap-3">
+              <div>
+                <span class="stat-label">{g.statLabel}</span>
+                <div class="stat-value text-lg mt-0.5">{g.statValue}</div>
+              </div>
+              <span class="btn-gold !py-2 !px-4 !text-[0.72rem]" aria-hidden="true">Sit down &rarr;</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- HOUSE RULES STRIP -->
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="panel p-5 sm:p-6">
+      <div class="grid sm:grid-cols-3 gap-5 sm:gap-8 items-center">
+        <div class="sm:col-span-2">
+          <span class="eyebrow">House rules</span>
+          <p class="text-parchment-soft text-sm mt-3 leading-relaxed max-w-2xl">
+            All chips are play money. The lobby reseats you with $1,000 anytime your stack runs dry.
+            Bots play a fixed strategy — they are not learning. Hand outcomes are logged locally to your browser; nothing leaves your device.
+          </p>
+        </div>
+        <div class="flex sm:justify-end gap-3 flex-wrap">
+          <a href="/settings" class="btn-ghost">Reset chips</a>
+          <a href="/hands" class="btn-ghost">Hand history</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</PokerLayout>
+
+<style>
+  .game-tile {
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .game-tile:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 rgba(212, 175, 55, 0.18) inset,
+      0 16px 38px -14px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(212, 175, 55, 0.35);
+  }
+  .tile-art {
+    background: #062018;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4);
+  }
+  .ticker-pulse {
+    animation: ticker-pulse 2.2s ease-out infinite;
+  }
+  @keyframes ticker-pulse {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    70%  { transform: scale(2.4); opacity: 0; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-pulse { animation: none; }
+  }
+</style>
+
+<script>
+  // Live-feel ticker. Stable base, small jitter every few seconds.
+  (function () {
+    const playersEl = document.querySelector('[data-ticker-players]');
+    const handsEl   = document.querySelector('[data-ticker-hands]');
+    const potEl     = document.querySelector('[data-ticker-pot]');
+    if (!playersEl || !handsEl || !potEl) return;
+
+    // Stable seed for "today" so the numbers feel consistent within a session.
+    const day = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+    let rng = day;
+    const rand = () => {
+      // Mulberry32-ish
+      rng = (rng + 0x6D2B79F5) | 0;
+      let t = rng;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    let players = 38 + Math.floor(rand() * 22);   // 38..59
+    let hands   = 9  + Math.floor(rand() * 8);    // 9..16
+    let potK    = 1100 + Math.floor(rand() * 350); // $1,100K..$1,449K
+
+    const fmtPot = (k) => {
+      if (k >= 1000) return '$' + (k / 1000).toFixed(1) + 'M';
+      return '$' + k + 'K';
+    };
+
+    const paint = () => {
+      playersEl.textContent = String(players);
+      handsEl.textContent   = String(hands);
+      potEl.textContent     = fmtPot(potK);
+    };
+    paint();
+
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    setInterval(() => {
+      // small organic jitter, clamped
+      players = Math.max(32, Math.min(64, players + (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.7 ? 1 : 2)));
+      hands   = Math.max(7,  Math.min(19, hands   + (Math.random() < 0.5 ? -1 : 1)));
+      potK    = Math.max(950, Math.min(1600, potK + Math.round((Math.random() - 0.5) * 40)));
+      paint();
+    }, 3500);
+  })();
+</script>
+</content>
+</invoke>
