@@ -274,6 +274,12 @@ export function playRaise() {
   });
 }
 
+export function playBet() {
+  // Bet = two quick chip knocks (woody thump pair).
+  playChip();
+  setTimeout(playChip, 70);
+}
+
 export function playAllIn() {
   // Dramatic: low C3 + C4 with rising harmonic and a tiny noise crash.
   const c = ready(); if (!c) return;
