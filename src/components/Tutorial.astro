@@ -1,0 +1,77 @@
+---
+// First-load "how to play" carousel. Persists dismissal in localStorage.
+// Props:
+//   game: string  (key for hasSeenTutorial)
+//   steps: { title: string, body: string }[]
+export interface Props {
+  game: string;
+  steps: { title: string; body: string }[];
+}
+const { game, steps } = Astro.props;
+---
+<div class="tutorial-overlay" data-tutorial-overlay data-game={game} hidden>
+  <div class="tutorial-card" role="dialog" aria-modal="true" aria-labelledby={`tut-${game}-title`}>
+    <span class="eyebrow">How to play</span>
+    <h2 id={`tut-${game}-title`} class="display text-2xl text-parchment mt-3" data-tutorial-title>{steps[0]?.title || ''}</h2>
+    <p class="text-parchment-soft text-sm mt-3 leading-relaxed tutorial-step" data-tutorial-body>{steps[0]?.body || ''}</p>
+    <div class="mt-6 flex items-center justify-between gap-3">
+      <button type="button" class="action-btn" data-tutorial-skip>Skip</button>
+      <div class="tutorial-dots" data-tutorial-dots>
+        {steps.map((_, i) => (
+          <span class={`tutorial-dot ${i === 0 ? 'is-active' : ''}`} data-tutorial-dot data-i={i}></span>
+        ))}
+      </div>
+      <button type="button" class="action-btn is-primary" data-tutorial-next>
+        <span data-tutorial-next-label>Next</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ steps, game }}>
+  (() => {
+    const root = document.querySelector(`[data-tutorial-overlay][data-game="${game}"]`);
+    if (!root) return;
+
+    const TKEY = 'chipshot.tutorial.v1';
+    let seen = {};
+    try { seen = JSON.parse(localStorage.getItem(TKEY) || '{}'); } catch {}
+    if (seen[game]) return;
+
+    root.hidden = false;
+    const titleEl = root.querySelector('[data-tutorial-title]');
+    const bodyEl = root.querySelector('[data-tutorial-body]');
+    const dots = [...root.querySelectorAll('[data-tutorial-dot]')];
+    const nextBtn = root.querySelector('[data-tutorial-next]');
+    const nextLabel = root.querySelector('[data-tutorial-next-label]');
+    const skipBtn = root.querySelector('[data-tutorial-skip]');
+    let i = 0;
+
+    const render = () => {
+      const s = steps[i];
+      if (titleEl) titleEl.textContent = s.title;
+      if (bodyEl) bodyEl.textContent = s.body;
+      dots.forEach((d, idx) => d.classList.toggle('is-active', idx === i));
+      if (nextLabel) nextLabel.textContent = i === steps.length - 1 ? 'Got it' : 'Next';
+    };
+    const dismiss = () => {
+      try {
+        const cur = JSON.parse(localStorage.getItem(TKEY) || '{}');
+        cur[game] = true;
+        localStorage.setItem(TKEY, JSON.stringify(cur));
+      } catch {}
+      root.hidden = true;
+    };
+    nextBtn?.addEventListener('click', () => {
+      if (i === steps.length - 1) return dismiss();
+      i++; render();
+    });
+    skipBtn?.addEventListener('click', dismiss);
+    root.addEventListener('click', (e) => { if (e.target === root) dismiss(); });
+    document.addEventListener('keydown', (e) => {
+      if (root.hidden) return;
+      if (e.key === 'Escape') dismiss();
+      if (e.key === 'ArrowRight' || e.key === 'Enter') nextBtn?.click();
+    });
+  })();
+</script>

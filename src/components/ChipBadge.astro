@@ -1,0 +1,18 @@
+---
+// Standalone chip-balance pill. Used inline on game pages.
+// PokerLayout already mounts a global subscriber that paints
+// every element with [data-chip-balance].
+export interface Props {
+  href?: string;
+  label?: string;
+  showLifetime?: boolean;
+}
+const { href = '/games', label, showLifetime = false } = Astro.props;
+---
+<a href={href} class="chip-badge" data-chip-badge aria-label={label || 'Chip balance'}>
+  <span class="chip-dot" aria-hidden="true"></span>
+  <span data-chip-balance>$1,000</span>
+  {showLifetime && (
+    <span class="text-parchment-dim text-xs ml-1" data-chip-lifetime aria-hidden="true"></span>
+  )}
+</a>

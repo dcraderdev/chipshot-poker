@@ -1,0 +1,239 @@
+/* Game-table layout. Shared by every game page. */
+
+.felt-table {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 50% 30%, var(--color-felt-rail, #1f7a55) 0%, var(--color-felt, #0d3b2e) 50%, var(--color-felt-deep, #082619) 100%);
+  border: 2px solid var(--color-gold-deep, #a3851f);
+  border-radius: 220px / 140px;
+  padding: 28px 18px;
+  box-shadow:
+    0 0 0 6px rgba(0,0,0,0.4),
+    0 0 80px rgba(0,0,0,0.45) inset,
+    0 18px 60px rgba(0,0,0,0.5);
+  min-height: 360px;
+}
+
+@media (max-width: 640px) {
+  .felt-table {
+    border-radius: 32px;
+    padding: 20px 12px;
+    min-height: 280px;
+  }
+}
+
+.felt-pot {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(6, 24, 18, 0.7);
+  border: 1px solid rgba(212,175,55,0.55);
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gold-bright, #f0c855);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.game-action-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .game-action-bar.sticky-mobile {
+    position: sticky;
+    bottom: 0;
+    z-index: 30;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(6, 24, 18, 0.92);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid rgba(212,175,55,0.35);
+  }
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 88px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--color-gold-deep, #a3851f);
+  background: linear-gradient(180deg, #1a4a36 0%, #0d3b2e 100%);
+  color: var(--color-parchment, #f3e8c8);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.action-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #246a4d 0%, #145a3f 100%);
+  box-shadow: 0 0 0 1px var(--color-gold-bright, #f0c855);
+}
+.action-btn:active:not(:disabled) { transform: translateY(1px); }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.action-btn.is-primary {
+  background: linear-gradient(180deg, var(--color-gold-bright, #f0c855) 0%, var(--color-gold, #d4af37) 100%);
+  color: var(--color-felt-deep, #082619);
+  border-color: var(--color-gold, #d4af37);
+}
+.action-btn.is-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #fbd97a 0%, #e6c14a 100%);
+}
+.action-btn.is-danger { border-color: rgba(248,113,113,0.6); color: #fca5a5; }
+
+.bet-chip-row {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.bet-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  border: 3px dashed rgba(255,255,255,0.55);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4), 0 1px 0 rgba(255,255,255,0.2) inset;
+  cursor: pointer;
+  background: #2f6b9a;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+.bet-chip:hover { transform: translateY(-3px); filter: brightness(1.15); }
+.bet-chip[data-val="1"]    { background: #fff; color: #111; border-color: #c0c0c0; }
+.bet-chip[data-val="5"]    { background: #c9302c; }
+.bet-chip[data-val="25"]   { background: #2f6b9a; }
+.bet-chip[data-val="100"]  { background: #111; }
+.bet-chip[data-val="500"]  { background: #6b21a8; }
+.bet-chip[data-val="1000"] { background: linear-gradient(135deg, #f0c855, #a3851f); color: #082619; border-color: #fff; }
+
+.player-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(6, 24, 18, 0.6);
+  border: 1px solid rgba(212,175,55,0.25);
+  min-width: 130px;
+}
+.player-seat.is-active {
+  border-color: var(--color-gold-bright, #f0c855);
+  box-shadow: 0 0 12px rgba(240,200,85,0.4);
+}
+.player-seat.is-folded { opacity: 0.4; }
+.player-seat.is-winner {
+  border-color: var(--color-win, #4ade80);
+  box-shadow: 0 0 16px rgba(74,222,128,0.5);
+}
+.player-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-parchment, #f3e8c8);
+  letter-spacing: 0.04em;
+}
+.player-stack {
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  color: var(--color-gold-bright, #f0c855);
+}
+.player-bet {
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  color: var(--color-parchment-soft, #d9cda6);
+  background: rgba(212,175,55,0.15);
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+
+.game-log {
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  color: var(--color-parchment-soft, #d9cda6);
+  background: rgba(6,18,14,0.6);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  max-height: 140px;
+  overflow-y: auto;
+  line-height: 1.45;
+}
+.game-log .log-win { color: var(--color-win, #4ade80); }
+.game-log .log-loss { color: var(--color-loss, #f87171); }
+
+/* Chip badge in nav */
+.chip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(212,175,55,0.12);
+  border: 1px solid rgba(212,175,55,0.45);
+  font-family: var(--font-mono, monospace);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--color-gold-bright, #f0c855);
+  font-weight: 700;
+  text-decoration: none;
+}
+.chip-badge:hover { background: rgba(212,175,55,0.2); }
+.chip-badge .chip-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f0c855, #a3851f);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.4);
+}
+
+/* Tutorial overlay */
+.tutorial-overlay {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 50;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+.tutorial-card {
+  max-width: 480px;
+  width: 100%;
+  background: linear-gradient(180deg, #145a3f 0%, #082619 100%);
+  border: 1px solid var(--color-gold-deep, #a3851f);
+  border-radius: 8px;
+  padding: 28px 24px 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.tutorial-step {
+  min-height: 140px;
+}
+.tutorial-dots { display: flex; gap: 6px; justify-content: center; }
+.tutorial-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(212,175,55,0.35);
+}
+.tutorial-dot.is-active { background: var(--color-gold-bright, #f0c855); }
+
+/* Sticky bottom action bar on small screens (game-specific) */
+.fixed-bottom-pad { padding-bottom: 90px; }
+@media (min-width: 641px) {
+  .fixed-bottom-pad { padding-bottom: 0; }
+}

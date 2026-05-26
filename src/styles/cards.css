@@ -1,0 +1,163 @@
+/* Playing-card visuals — used by Card.astro and by client-rendered game JS.
+   Card classes are stable: any JS can construct
+     <div class="playing-card pc-md is-red"> ...</div>
+   to match the Astro server-rendered version. */
+
+.playing-card {
+  --pc-w: 64px;
+  --pc-h: 90px;
+  --pc-radius: 6px;
+  position: relative;
+  display: inline-block;
+  width: var(--pc-w);
+  height: var(--pc-h);
+  border-radius: var(--pc-radius);
+  background: linear-gradient(180deg, #fbf6e3 0%, #f3e8c8 100%);
+  color: var(--color-card-ink, #0c0c0c);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 -1px 0 rgba(0,0,0,0.08) inset,
+    0 2px 6px rgba(0,0,0,0.35),
+    0 6px 18px rgba(0,0,0,0.25);
+  border: 1px solid rgba(0,0,0,0.18);
+  user-select: none;
+  vertical-align: bottom;
+  font-family: var(--font-display, "Playfair Display", serif);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.playing-card.pc-sm { --pc-w: 42px; --pc-h: 60px; --pc-radius: 4px; }
+.playing-card.pc-md { --pc-w: 64px; --pc-h: 90px; --pc-radius: 6px; }
+.playing-card.pc-lg { --pc-w: 90px; --pc-h: 126px; --pc-radius: 8px; }
+
+.playing-card.is-red { color: var(--color-card-red, #d9404a); }
+.playing-card.is-black { color: #0c0c0c; }
+
+.playing-card .pc-corner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  font-weight: 700;
+}
+.playing-card .pc-tl { top: 4px; left: 5px; }
+.playing-card .pc-br { bottom: 4px; right: 5px; transform: rotate(180deg); }
+.playing-card .pc-rank { font-size: calc(var(--pc-h) * 0.22); }
+.playing-card .pc-suit { font-size: calc(var(--pc-h) * 0.18); margin-top: 1px; }
+
+.playing-card .pc-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--pc-h) * 0.42);
+  opacity: 0.85;
+}
+
+.playing-card.pc-sm .pc-rank { font-size: 11px; }
+.playing-card.pc-sm .pc-suit { font-size: 10px; }
+.playing-card.pc-sm .pc-center { font-size: 22px; }
+
+/* Face-down card back: ChipShot crest pattern */
+.playing-card.is-facedown {
+  background:
+    repeating-linear-gradient(45deg, #0d3b2e 0 6px, #082619 6px 12px);
+  border-color: rgba(212,175,55,0.7);
+  box-shadow:
+    0 0 0 2px rgba(212,175,55,0.15) inset,
+    0 2px 6px rgba(0,0,0,0.45);
+}
+.playing-card .pc-back {
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(212,175,55,0.55);
+  border-radius: calc(var(--pc-radius) - 2px);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(212,175,55,0.18) 0 30%, transparent 60%),
+    repeating-linear-gradient(135deg, transparent 0 6px, rgba(212,175,55,0.08) 6px 8px);
+}
+
+/* Hover lift (only when interactive) */
+.playing-card.is-interactive { cursor: pointer; }
+.playing-card.is-interactive:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.6) inset,
+    0 8px 14px rgba(0,0,0,0.5),
+    0 0 0 2px rgba(240,200,85,0.5);
+}
+
+/* Held / selected (video poker, draw discard) */
+.playing-card.is-held::after {
+  content: "HOLD";
+  position: absolute;
+  top: -10px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--color-felt-deep, #082619);
+  background: var(--color-gold-bright, #f0c855);
+  padding: 2px 6px;
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.playing-card.is-held {
+  transform: translateY(-8px);
+  box-shadow: 0 0 0 2px var(--color-gold-bright, #f0c855), 0 8px 14px rgba(0,0,0,0.5);
+}
+.playing-card.is-discard {
+  opacity: 0.45;
+  transform: translateY(4px);
+}
+
+/* Win highlight */
+.playing-card.is-win {
+  animation: pcWin 0.9s ease-out;
+  box-shadow:
+    0 0 0 3px rgba(240,200,85,0.9),
+    0 0 24px rgba(240,200,85,0.5),
+    0 6px 16px rgba(0,0,0,0.5);
+}
+@keyframes pcWin {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-14px) scale(1.06); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* Deal-in animation */
+.playing-card.is-dealing {
+  animation: pcDeal 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes pcDeal {
+  from {
+    transform: translate(60vw, -40vh) rotate(-40deg);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0) rotate(0);
+    opacity: 1;
+  }
+}
+
+/* Flip animation (face-down -> face-up) */
+.playing-card.is-flipping {
+  animation: pcFlip 0.4s ease-in-out;
+}
+@keyframes pcFlip {
+  0%   { transform: rotateY(0); }
+  50%  { transform: rotateY(90deg); }
+  100% { transform: rotateY(0); }
+}
+
+/* Compact hand cluster (overlapping cards) */
+.card-row { display: inline-flex; gap: 6px; }
+.card-stack { display: inline-flex; }
+.card-stack .playing-card + .playing-card { margin-left: -28px; }
+.card-stack.pc-md .playing-card + .playing-card { margin-left: -42px; }
+
+@media (max-width: 480px) {
+  .playing-card.pc-lg { --pc-w: 64px; --pc-h: 90px; --pc-radius: 6px; }
+  .playing-card.pc-md { --pc-w: 54px; --pc-h: 76px; }
+}

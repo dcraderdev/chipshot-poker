@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./cards.css";
+@import "./games.css";
 
 @theme {
   --color-felt-deep: #082619;
